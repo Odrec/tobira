@@ -145,11 +145,11 @@ begin
             'containing a bunch of dummy data. All text and videos you can see here are just for '
             'testing.'
         );
-    insert into blocks (realm, type, index, series, videolist_order, show_title)
-        values (0, 'series', 1, series_university_highlights, 'new_to_old', true);
+    insert into blocks (realm, type, index, series, videolist_order, videolist_layout, show_title, show_metadata)
+        values (0, 'series', 1, series_university_highlights, 'new_to_old', 'gallery', true, true);
 
-    insert into blocks (realm, type, index, series, videolist_order, show_title)
-        values (events_realm_id, 'series', 1, series_christmas, 'new_to_old', true);
+    insert into blocks (realm, type, index, series, videolist_order, videolist_layout, show_title, show_metadata)
+        values (events_realm_id, 'series', 1, series_christmas, 'new_to_old', 'gallery', true, true);
 
 
     -- Add a bunch of events/videos
