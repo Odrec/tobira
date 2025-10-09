@@ -237,7 +237,6 @@ impl AiQuiz {
 
 /// A single quiz question
 #[derive(Debug, Clone, Serialize, Deserialize, GraphQLObject)]
-#[serde(rename_all = "camelCase")]
 pub(crate) struct QuizQuestion {
     /// The question text
     pub question: String,
@@ -249,7 +248,8 @@ pub(crate) struct QuizQuestion {
     /// Available answer options (for multiple choice)
     pub options: Option<Vec<String>>,
     
-    /// The correct answer
+    /// The correct answer (as string representation)
+    #[serde(deserialize_with = "deserialize_correct_answer")]
     pub correct_answer: String,
     
     /// Explanation of the answer
@@ -260,6 +260,62 @@ pub(crate) struct QuizQuestion {
     
     /// Timestamp in the video where this topic appears (in seconds)
     pub timestamp: Option<f64>,
+}
+
+/// Custom deserializer to handle correct_answer being int, bool, or string
+fn deserialize_correct_answer<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::{self, Visitor};
+    use std::fmt;
+
+    struct CorrectAnswerVisitor;
+
+    impl<'de> Visitor<'de> for CorrectAnswerVisitor {
+        type Value = String;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a string, number, or boolean")
+        }
+
+        fn visit_bool<E>(self, value: bool) -> Result<String, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<String, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<String, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<String, E>
+        where
+            E: de::Error,
+        {
+            Ok(value.to_string())
+        }
+
+        fn visit_string<E>(self, value: String) -> Result<String, E>
+        where
+            E: de::Error,
+        {
+            Ok(value)
+        }
+    }
+
+    deserializer.deserialize_any(CorrectAnswerVisitor)
 }
 
 

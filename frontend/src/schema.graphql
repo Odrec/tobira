@@ -784,7 +784,7 @@ type QuizQuestion {
   questionType: String!
   "Available answer options (for multiple choice)"
   options: [String!]
-  "The correct answer"
+  "The correct answer (as string representation)"
   correctAnswer: String!
   "Explanation of the answer"
   explanation: String!

@@ -31,6 +31,8 @@ import { makeRoute, MatchedRoute } from "../rauta";
 import { isValidRealmPath } from "./Realm";
 import { Breadcrumbs } from "../ui/Breadcrumbs";
 import { PageTitle } from "../layout/header/ui";
+import { AiSummary } from "../ui/AiSummary";
+import { AiQuiz } from "../ui/AiQuiz";
 import {
     SyncedOpencastEntity,
     isSynced,
@@ -469,6 +471,12 @@ const eventFragment = graphql`
                 opencastId
                 title
                 ... SeriesBlockSeriesData
+            }
+            aiSummary(language: "en") {
+                ...AiSummary
+            }
+            aiQuiz(language: "en") {
+                ...AiQuiz
             }
         }
     }
@@ -959,6 +967,41 @@ const Metadata: React.FC<MetadataProps> = ({ event, realmPath }) => {
                 <MetadataTable {...{ event, realmPath }} />
             </div>
         </div>
+
+        {/* AI-Generated Content */}
+        {event.aiSummary && (
+            <AiSummary fragmentRef={event.aiSummary} />
+        )}
+
+        {event.aiQuiz && (
+            <AiQuiz
+                fragmentRef={event.aiQuiz}
+                onSeekToTimestamp={async (seconds) => {
+                    // Integration with video player to seek to timestamp
+                    if (!paella.current?.player?.videoContainer || !paella.current?.loadPromise) {
+                        console.warn("Video player not ready yet");
+                        return;
+                    }
+                    try {
+                        // Wait for player to be fully loaded
+                        await paella.current.loadPromise;
+                        
+                        // Check if video is paused
+                        const isPaused = await paella.current.player.videoContainer.paused();
+                        if (isPaused) {
+                            // Start playing
+                            await paella.current.player.videoContainer.play();
+                            // Give player streams a moment to initialize after play
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                        }
+                        // Seek to the timestamp
+                        await paella.current.player.videoContainer.setCurrentTime(seconds);
+                    } catch (error) {
+                        console.error("Failed to seek to timestamp:", error);
+                    }
+                }}
+            />
+        )}
     </>;
 };
 
