@@ -17,6 +17,7 @@ use crate::{
         err::{self, ApiResult},
         model::{
             acl::{self, Acl},
+            ai::{AiSummary, AiQuiz},
             realm::Realm,
             series::Series,
             shared::{ToSqlColumn, SortDirection, SearchFilter, convert_acl_input}
@@ -399,6 +400,24 @@ impl AuthorizedEvent {
             select unnest(write_roles) as role, 'write' as action from events where id = $1
         ";
         acl::load_for(context, raw_roles_sql, dbargs![&self.key]).await
+    }
+
+    /// AI-generated summary for this event (if available)
+    async fn ai_summary(
+        &self,
+        context: &Context,
+        language: Option<String>,
+    ) -> ApiResult<Option<AiSummary>> {
+        AiSummary::load_for_event(self.key, language, context).await
+    }
+
+    /// AI-generated quiz for this event (if available)
+    async fn ai_quiz(
+        &self,
+        context: &Context,
+        language: Option<String>,
+    ) -> ApiResult<Option<AiQuiz>> {
+        AiQuiz::load_for_event(self.key, language, context).await
     }
 
     /// Returns `true` if the realm has a video block with this video

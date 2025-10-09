@@ -344,6 +344,40 @@ type AdminSyncInfo {
   externalApiVersion: String
 }
 
+type AiQuiz {
+  "The event this quiz belongs to"
+  eventId: ID!
+  "Language code of the quiz (e.g., 'en', 'de')"
+  language: String!
+  "The quiz questions and metadata as JSON"
+  questions: [QuizQuestion!]!
+  "OpenAI model used to generate this quiz"
+  model: String!
+  "Time taken to generate the quiz in milliseconds"
+  processingTimeMs: Int
+  "When this quiz was created"
+  createdAt: DateTime!
+  "When this quiz was last updated"
+  updatedAt: DateTime!
+}
+
+type AiSummary {
+  "The event this summary belongs to"
+  eventId: ID!
+  "Language code of the summary (e.g., 'en', 'de')"
+  language: String!
+  "The AI-generated summary text"
+  summary: String!
+  "OpenAI model used to generate this summary"
+  model: String!
+  "Time taken to generate the summary in milliseconds"
+  processingTimeMs: Int
+  "When this summary was created"
+  createdAt: DateTime!
+  "When this summary was last updated"
+  updatedAt: DateTime!
+}
+
 type ArrayMatch {
   index: Int!
   span: ByteSpan!
@@ -378,6 +412,10 @@ type AuthorizedEvent implements Node {
   "Whether this event is password protected."
   hasPassword: Boolean!
   acl: [AclItem!]!
+  "AI-generated summary for this event (if available)"
+  aiSummary(language: String): AiSummary
+  "AI-generated quiz for this event (if available)"
+  aiQuiz(language: String): AiQuiz
   """
     Returns `true` if the realm has a video block with this video
     OR if the realm has a series or playlist block including this video.
@@ -736,6 +774,24 @@ type Query {
   knownGroups: [KnownGroup!]!
   "Returns information for the admin dashboard."
   adminDashboardInfo: AdminInfo
+}
+
+"A single quiz question"
+type QuizQuestion {
+  "The question text"
+  question: String!
+  "Type of question (multiple_choice or true_false)"
+  questionType: String!
+  "Available answer options (for multiple choice)"
+  options: [String!]
+  "The correct answer"
+  correctAnswer: String!
+  "Explanation of the answer"
+  explanation: String!
+  "Difficulty level (easy, medium, hard)"
+  difficulty: String!
+  "Timestamp in the video where this topic appears (in seconds)"
+  timestamp: Float
 }
 
 type Realm implements Node {
