@@ -1,4 +1,5 @@
 import React, {
+    MutableRefObject,
     ReactNode,
     useEffect,
     useRef,
@@ -120,11 +121,16 @@ export const VideoRoute = makeRoute({
                 $listId: ID!,
                 $eventUser: String,
                 $eventPassword: String,
+                $captionLanguage: String,
             ) {
                 ... UserData
                 event: eventById(id: $id) {
                     ... VideoPageEventData
-                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword)
+                        @arguments(
+                            eventUser: $eventUser,
+                            eventPassword: $eventPassword,
+                            captionLanguage: $captionLanguage
+                        )
                     ... on AuthorizedEvent {
                         isReferencedByRealm(path: $realmPath)
                     }
@@ -138,12 +144,15 @@ export const VideoRoute = makeRoute({
         `;
 
         const creds = getCredentials("event", id);
+        const urlParams = new URLSearchParams(window.location.search);
+        const aiLang = urlParams.get("aiLang") || "en";
         const queryRef = loadQuery<VideoPageInRealmQuery>(query, {
             id,
             realmPath,
             listId,
             eventUser: creds?.user,
             eventPassword: creds?.password,
+            captionLanguage: aiLang,
         });
 
         return {
@@ -442,6 +451,7 @@ const eventFragment = graphql`
         @argumentDefinitions(
           eventUser: { type: "String", defaultValue: null },
           eventPassword: { type: "String", defaultValue: null },
+          captionLanguage: { type: "String", defaultValue: "en" },
         )
     {
         __typename
@@ -472,10 +482,10 @@ const eventFragment = graphql`
                 title
                 ... SeriesBlockSeriesData
             }
-            aiSummary(language: "en") {
+            aiSummary(language: $captionLanguage) {
                 ...AiSummary
             }
-            aiQuiz(language: "en") {
+            aiQuiz(language: $captionLanguage) {
                 ...AiQuiz
             }
         }
@@ -968,7 +978,82 @@ const Metadata: React.FC<MetadataProps> = ({ event, realmPath }) => {
             </div>
         </div>
 
-        {/* AI-Generated Content */}
+        {/* AI-Generated Content with Language Selection */}
+        <AiContentSection event={event} paella={paella} />
+    </>;
+};
+
+type AiContentSectionProps = {
+    event: SyncedEvent;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    paella: MutableRefObject<any>;
+};
+
+const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) => {
+    const { t } = useTranslation();
+
+    // Get available caption languages
+    const availableLanguages = event.authorizedData?.captions
+        ? Array.from(new Set(event.authorizedData.captions.map(c => c.lang).filter(notNullish)))
+        : [];
+
+    // Get current language from URL or default to "en"
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get("aiLang");
+    const defaultLanguage = urlLang && availableLanguages.includes(urlLang)
+        ? urlLang
+        : (availableLanguages.includes("en") ? "en" : (availableLanguages[0] || "en"));
+
+    const [selectedLanguage] = useState(defaultLanguage);
+
+    // Show language selector only if there are multiple languages
+    const showLanguageSelector = availableLanguages.length > 1;
+
+    // Handle language change - reload page with new language parameter
+    const handleLanguageChange = (newLang: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("aiLang", newLang);
+        window.location.href = url.toString();
+    };
+
+    return <>
+        {(event.aiSummary || event.aiQuiz) && showLanguageSelector && (
+            <div css={{
+                marginTop: "16px",
+                padding: "12px 16px",
+                backgroundColor: COLORS.neutral10,
+                borderRadius: 8,
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+            }}>
+                <label htmlFor="ai-language-select" css={{ fontWeight: 500 }}>
+                    {t("video.ai-content.language-label", "AI Content Language:")}
+                </label>
+                <select
+                    id="ai-language-select"
+                    value={selectedLanguage}
+                    onChange={e => handleLanguageChange(e.target.value)}
+                    css={{
+                        padding: "6px 12px",
+                        borderRadius: 4,
+                        border: `1px solid ${COLORS.neutral25}`,
+                        backgroundColor: COLORS.neutral05,
+                        cursor: "pointer",
+                        "&:hover": {
+                            borderColor: COLORS.neutral40,
+                        },
+                    }}
+                >
+                    {availableLanguages.map(lang => lang && (
+                        <option key={lang} value={lang}>
+                            {lang.toUpperCase()}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        )}
+
         {event.aiSummary && (
             <AiSummary fragmentRef={event.aiSummary} />
         )}
@@ -976,28 +1061,31 @@ const Metadata: React.FC<MetadataProps> = ({ event, realmPath }) => {
         {event.aiQuiz && (
             <AiQuiz
                 fragmentRef={event.aiQuiz}
-                onSeekToTimestamp={async (seconds) => {
+                onSeekToTimestamp={async seconds => {
                     // Integration with video player to seek to timestamp
                     if (!paella.current?.player?.videoContainer || !paella.current?.loadPromise) {
-                        console.warn("Video player not ready yet");
+                        // Video player not ready yet
                         return;
                     }
                     try {
                         // Wait for player to be fully loaded
                         await paella.current.loadPromise;
-                        
+
                         // Check if video is paused
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         const isPaused = await paella.current.player.videoContainer.paused();
                         if (isPaused) {
                             // Start playing
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                             await paella.current.player.videoContainer.play();
                             // Give player streams a moment to initialize after play
                             await new Promise(resolve => setTimeout(resolve, 200));
                         }
                         // Seek to the timestamp
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         await paella.current.player.videoContainer.setCurrentTime(seconds);
-                    } catch (error) {
-                        console.error("Failed to seek to timestamp:", error);
+                    } catch {
+                        // Failed to seek to timestamp
                     }
                 }}
             />
