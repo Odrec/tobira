@@ -1004,16 +1004,15 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
     const urlParams = new URLSearchParams(window.location.search);
     const urlLang = urlParams.get("aiLang");
 
-    // If there's no URL parameter but we have AI content, use first caption language or "en"
+    // If there's no URL parameter and we have caption languages, redirect with first available
     React.useEffect(() => {
-        if (!urlLang && (event.aiSummary || event.aiQuiz)) {
+        const firstLang = availableLanguages[0];
+        if (!urlLang && firstLang) {
             const url = new URL(window.location.href);
-            // Try first caption language, or fall back to "en"
-            const defaultLang = availableLanguages[0] || "en";
-            url.searchParams.set("aiLang", defaultLang);
+            url.searchParams.set("aiLang", firstLang);
             window.location.href = url.toString();
         }
-    }, [urlLang, availableLanguages, event.aiSummary, event.aiQuiz]);
+    }, [urlLang, availableLanguages]);
 
     // The selected language should match what was queried
     const selectedLanguage = urlLang || "en";
