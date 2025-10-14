@@ -146,16 +146,15 @@ export const VideoRoute = makeRoute({
         const creds = getCredentials("event", id);
         const urlParams = new URLSearchParams(window.location.search);
         const explicitAiLang = urlParams.get("aiLang");
-        // For now, we need to defer the default language logic to after we have caption data
-        // So we pass null if no explicit language is set, and handle the default in the component
-        const aiLang = explicitAiLang || "en";
+        // Pass language as-is (null if not specified)
+        // Backend will return first available AI content if null
         const queryRef = loadQuery<VideoPageInRealmQuery>(query, {
             id,
             realmPath,
             listId,
             eventUser: creds?.user,
             eventPassword: creds?.password,
-            captionLanguage: aiLang,
+            captionLanguage: explicitAiLang,
         });
 
         return {
@@ -1004,19 +1003,8 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
     const urlParams = new URLSearchParams(window.location.search);
     const urlLang = urlParams.get("aiLang");
 
-    // If there's no URL parameter, redirect with first caption language or fallback to "de-de"
-    React.useEffect(() => {
-        if (!urlLang) {
-            const url = new URL(window.location.href);
-            // Use first caption language if available, otherwise default to "de-de"
-            const defaultLang = availableLanguages[0] || "de-de";
-            url.searchParams.set("aiLang", defaultLang);
-            window.location.href = url.toString();
-        }
-    }, [urlLang, availableLanguages]);
-
-    // The selected language should match what was queried
-    const selectedLanguage = urlLang || "en";
+    // The selected language: URL param if present, otherwise first caption language
+    const selectedLanguage = urlLang || availableLanguages[0] || "";
 
     // Show language selector only if there are multiple languages
     const showLanguageSelector = availableLanguages.length > 1;

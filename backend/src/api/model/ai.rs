@@ -97,23 +97,38 @@ impl AiSummary {
 
 impl AiSummary {
     /// Load AI summary for a specific event
+    /// If no language specified, returns first available summary for this event
     pub(crate) async fn load_for_event(
         event_id: Key,
         language: Option<String>,
         context: &Context,
     ) -> ApiResult<Option<Self>> {
-        let lang = language.unwrap_or_else(|| "en".to_string());
         let selection = Self::select();
-        let query = format!(
-            "select {selection} from ai_summaries \
-             where event_id = $1 and language = $2"
-        );
         
-        context.db
-            .query_opt(&query, &[&event_id, &lang])
-            .await?
-            .map(|row| Self::from_row_start(&row))
-            .pipe(Ok)
+        if let Some(lang) = language {
+            // Try exact language if specified
+            let query = format!(
+                "select {selection} from ai_summaries \
+                 where event_id = $1 and language = $2"
+            );
+            context.db
+                .query_opt(&query, &[&event_id, &lang])
+                .await?
+                .map(|row| Self::from_row_start(&row))
+                .pipe(Ok)
+        } else {
+            // No language specified - return first available summary
+            let query = format!(
+                "select {selection} from ai_summaries \
+                 where event_id = $1 \
+                 order by language limit 1"
+            );
+            context.db
+                .query_opt(&query, &[&event_id])
+                .await?
+                .map(|row| Self::from_row_start(&row))
+                .pipe(Ok)
+        }
     }
 }
 
@@ -210,23 +225,38 @@ impl AiQuiz {
 
 impl AiQuiz {
     /// Load AI quiz for a specific event
+    /// If no language specified, returns first available quiz for this event
     pub(crate) async fn load_for_event(
         event_id: Key,
         language: Option<String>,
         context: &Context,
     ) -> ApiResult<Option<Self>> {
-        let lang = language.unwrap_or_else(|| "en".to_string());
         let selection = Self::select();
-        let query = format!(
-            "select {selection} from ai_quizzes \
-             where event_id = $1 and language = $2"
-        );
         
-        context.db
-            .query_opt(&query, &[&event_id, &lang])
-            .await?
-            .map(|row| Self::from_row_start(&row))
-            .pipe(Ok)
+        if let Some(lang) = language {
+            // Try exact language if specified
+            let query = format!(
+                "select {selection} from ai_quizzes \
+                 where event_id = $1 and language = $2"
+            );
+            context.db
+                .query_opt(&query, &[&event_id, &lang])
+                .await?
+                .map(|row| Self::from_row_start(&row))
+                .pipe(Ok)
+        } else {
+            // No language specified - return first available quiz
+            let query = format!(
+                "select {selection} from ai_quizzes \
+                 where event_id = $1 \
+                 order by language limit 1"
+            );
+            context.db
+                .query_opt(&query, &[&event_id])
+                .await?
+                .map(|row| Self::from_row_start(&row))
+                .pipe(Ok)
+        }
     }
 }
 

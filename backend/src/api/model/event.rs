@@ -420,6 +420,22 @@ impl AuthorizedEvent {
         AiQuiz::load_for_event(self.key, language, context).await
     }
 
+    /// Available languages for AI-generated content (summaries and quizzes)
+    async fn ai_content_languages(&self, context: &Context) -> ApiResult<Vec<String>> {
+        let query = "
+            select distinct language from (
+                select language from ai_summaries where event_id = $1
+                union
+                select language from ai_quizzes where event_id = $1
+            ) as langs
+            order by language
+        ";
+        
+        context.db.query_mapped(&query, dbargs![&self.key], |row| {
+            row.get::<_, String>(0)
+        }).await.map_err(Into::into)
+    }
+
     /// Returns `true` if the realm has a video block with this video
     /// OR if the realm has a series or playlist block including this video.
     /// Otherwise, `false` is returned.
