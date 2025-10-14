@@ -1004,12 +1004,13 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
     const urlParams = new URLSearchParams(window.location.search);
     const urlLang = urlParams.get("aiLang");
 
-    // If there's no URL parameter and we have caption languages, redirect with first available
+    // If there's no URL parameter, redirect with first caption language or fallback to "de-de"
     React.useEffect(() => {
-        const firstLang = availableLanguages[0];
-        if (!urlLang && firstLang) {
+        if (!urlLang) {
             const url = new URL(window.location.href);
-            url.searchParams.set("aiLang", firstLang);
+            // Use first caption language if available, otherwise default to "de-de"
+            const defaultLang = availableLanguages[0] || "de-de";
+            url.searchParams.set("aiLang", defaultLang);
             window.location.href = url.toString();
         }
     }, [urlLang, availableLanguages]);
