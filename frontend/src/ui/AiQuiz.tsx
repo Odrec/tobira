@@ -9,6 +9,7 @@ import { COLORS } from "../color";
 
 const fragment = graphql`
   fragment AiQuiz on AiQuiz {
+    language
     questions {
       question
       questionType
@@ -109,8 +110,17 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
                     <LuCircle size={24} />
                     {t("video.ai-quiz.title", "Interactive Quiz")}
                 </h3>
-                <div css={{ fontSize: "0.9rem", color: COLORS.neutral40 }}>
-                    {t("video.ai-quiz.score", "Score:")} {score}/{data.questions.length}
+                <div css={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                    <div css={{
+                        fontSize: "0.85rem",
+                        color: COLORS.neutral40,
+                        fontWeight: 500,
+                    }}>
+                        {data.language.toUpperCase()}
+                    </div>
+                    <div css={{ fontSize: "0.9rem", color: COLORS.neutral40 }}>
+                        {t("video.ai-quiz.score", "Score:")} {score}/{data.questions.length}
+                    </div>
                 </div>
             </div>
 

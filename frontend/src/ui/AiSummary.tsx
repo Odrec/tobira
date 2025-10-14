@@ -8,6 +8,7 @@ import { COLORS } from "../color";
 
 const fragment = graphql`
   fragment AiSummary on AiSummary {
+    language
     summary
     model
     createdAt
@@ -39,11 +40,21 @@ export const AiSummary: React.FC<Props> = ({ fragmentRef }) => {
                 alignItems: "center",
                 marginBottom: "1rem",
                 gap: "0.5rem",
+                justifyContent: "space-between",
             }}>
-                <LuSparkles size={24} />
-                <h3 css={{ margin: 0 }}>
-                    {t("video.ai-summary.title", "AI-Generated Summary")}
-                </h3>
+                <div css={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <LuSparkles size={24} />
+                    <h3 css={{ margin: 0 }}>
+                        {t("video.ai-summary.title", "AI-Generated Summary")}
+                    </h3>
+                </div>
+                <div css={{
+                    fontSize: "0.85rem",
+                    color: COLORS.neutral40,
+                    fontWeight: 500,
+                }}>
+                    {data.language.toUpperCase()}
+                </div>
             </div>
 
             <div css={{

@@ -145,7 +145,10 @@ export const VideoRoute = makeRoute({
 
         const creds = getCredentials("event", id);
         const urlParams = new URLSearchParams(window.location.search);
-        const aiLang = urlParams.get("aiLang") || "en";
+        const explicitAiLang = urlParams.get("aiLang");
+        // For now, we need to defer the default language logic to after we have caption data
+        // So we pass null if no explicit language is set, and handle the default in the component
+        const aiLang = explicitAiLang || "en";
         const queryRef = loadQuery<VideoPageInRealmQuery>(query, {
             id,
             realmPath,
@@ -997,14 +1000,23 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
         ? Array.from(new Set(event.authorizedData.captions.map(c => c.lang).filter(notNullish)))
         : [];
 
-    // Get current language from URL or default to "en"
+    // Get the language parameter from URL
     const urlParams = new URLSearchParams(window.location.search);
     const urlLang = urlParams.get("aiLang");
-    const defaultLanguage = urlLang && availableLanguages.includes(urlLang)
-        ? urlLang
-        : (availableLanguages.includes("en") ? "en" : (availableLanguages[0] || "en"));
 
-    const [selectedLanguage] = useState(defaultLanguage);
+    // If there's no URL parameter but we have AI content, use first caption language or "en"
+    React.useEffect(() => {
+        if (!urlLang && (event.aiSummary || event.aiQuiz)) {
+            const url = new URL(window.location.href);
+            // Try first caption language, or fall back to "en"
+            const defaultLang = availableLanguages[0] || "en";
+            url.searchParams.set("aiLang", defaultLang);
+            window.location.href = url.toString();
+        }
+    }, [urlLang, availableLanguages, event.aiSummary, event.aiQuiz]);
+
+    // The selected language should match what was queried
+    const selectedLanguage = urlLang || "en";
 
     // Show language selector only if there are multiple languages
     const showLanguageSelector = availableLanguages.length > 1;
