@@ -97,7 +97,7 @@ impl AiSummary {
 
 impl AiSummary {
     /// Load AI summary for a specific event
-    /// If no language specified, returns first available summary for this event
+    /// If no language specified, uses the first available language from all AI content
     pub(crate) async fn load_for_event(
         event_id: Key,
         language: Option<String>,
@@ -105,30 +105,34 @@ impl AiSummary {
     ) -> ApiResult<Option<Self>> {
         let selection = Self::select();
         
-        if let Some(lang) = language {
-            // Try exact language if specified
-            let query = format!(
-                "select {selection} from ai_summaries \
-                 where event_id = $1 and language = $2"
-            );
-            context.db
-                .query_opt(&query, &[&event_id, &lang])
-                .await?
-                .map(|row| Self::from_row_start(&row))
-                .pipe(Ok)
+        let lang = if let Some(lang) = language {
+            lang
         } else {
-            // No language specified - return first available summary
-            let query = format!(
-                "select {selection} from ai_summaries \
-                 where event_id = $1 \
-                 order by language limit 1"
-            );
-            context.db
-                .query_opt(&query, &[&event_id])
-                .await?
-                .map(|row| Self::from_row_start(&row))
-                .pipe(Ok)
-        }
+            // No language specified - get first available language across all AI content
+            let lang_query = "
+                select language from (
+                    select language from ai_summaries where event_id = $1
+                    union
+                    select language from ai_quizzes where event_id = $1
+                ) as langs
+                order by language limit 1
+            ";
+            match context.db.query_opt(lang_query, &[&event_id]).await? {
+                Some(row) => row.get::<_, String>(0),
+                None => return Ok(None), // No AI content at all
+            }
+        };
+        
+        // Try to load summary for the determined language
+        let query = format!(
+            "select {selection} from ai_summaries \
+             where event_id = $1 and language = $2"
+        );
+        context.db
+            .query_opt(&query, &[&event_id, &lang])
+            .await?
+            .map(|row| Self::from_row_start(&row))
+            .pipe(Ok)
     }
 }
 
@@ -225,7 +229,7 @@ impl AiQuiz {
 
 impl AiQuiz {
     /// Load AI quiz for a specific event
-    /// If no language specified, returns first available quiz for this event
+    /// If no language specified, uses the first available language from all AI content
     pub(crate) async fn load_for_event(
         event_id: Key,
         language: Option<String>,
@@ -233,30 +237,34 @@ impl AiQuiz {
     ) -> ApiResult<Option<Self>> {
         let selection = Self::select();
         
-        if let Some(lang) = language {
-            // Try exact language if specified
-            let query = format!(
-                "select {selection} from ai_quizzes \
-                 where event_id = $1 and language = $2"
-            );
-            context.db
-                .query_opt(&query, &[&event_id, &lang])
-                .await?
-                .map(|row| Self::from_row_start(&row))
-                .pipe(Ok)
+        let lang = if let Some(lang) = language {
+            lang
         } else {
-            // No language specified - return first available quiz
-            let query = format!(
-                "select {selection} from ai_quizzes \
-                 where event_id = $1 \
-                 order by language limit 1"
-            );
-            context.db
-                .query_opt(&query, &[&event_id])
-                .await?
-                .map(|row| Self::from_row_start(&row))
-                .pipe(Ok)
-        }
+            // No language specified - get first available language across all AI content
+            let lang_query = "
+                select language from (
+                    select language from ai_summaries where event_id = $1
+                    union
+                    select language from ai_quizzes where event_id = $1
+                ) as langs
+                order by language limit 1
+            ";
+            match context.db.query_opt(lang_query, &[&event_id]).await? {
+                Some(row) => row.get::<_, String>(0),
+                None => return Ok(None), // No AI content at all
+            }
+        };
+        
+        // Try to load quiz for the determined language
+        let query = format!(
+            "select {selection} from ai_quizzes \
+             where event_id = $1 and language = $2"
+        );
+        context.db
+            .query_opt(&query, &[&event_id, &lang])
+            .await?
+            .map(|row| Self::from_row_start(&row))
+            .pipe(Ok)
     }
 }
 

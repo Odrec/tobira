@@ -453,7 +453,7 @@ const eventFragment = graphql`
         @argumentDefinitions(
           eventUser: { type: "String", defaultValue: null },
           eventPassword: { type: "String", defaultValue: null },
-          captionLanguage: { type: "String", defaultValue: "en" },
+          captionLanguage: { type: "String", defaultValue: null },
         )
     {
         __typename
