@@ -416,6 +416,8 @@ type AuthorizedEvent implements Node {
   aiSummary(language: String): AiSummary
   "AI-generated quiz for this event (if available)"
   aiQuiz(language: String): AiQuiz
+  "Available languages for AI-generated content (summaries and quizzes)"
+  aiContentLanguages: [String!]!
   """
     Returns `true` if the realm has a video block with this video
     OR if the realm has a series or playlist block including this video.

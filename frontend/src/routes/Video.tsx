@@ -484,6 +484,7 @@ const eventFragment = graphql`
                 title
                 ... SeriesBlockSeriesData
             }
+            aiContentLanguages
             aiSummary(language: $captionLanguage) {
                 ...AiSummary
             }
@@ -994,16 +995,14 @@ type AiContentSectionProps = {
 const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) => {
     const { t } = useTranslation();
 
-    // Get available caption languages
-    const availableLanguages = event.authorizedData?.captions
-        ? Array.from(new Set(event.authorizedData.captions.map(c => c.lang).filter(notNullish)))
-        : [];
+    // Get available AI content languages (languages for which summaries or quizzes exist)
+    const availableLanguages: readonly string[] = event.aiContentLanguages || [];
 
     // Get the language parameter from URL
     const urlParams = new URLSearchParams(window.location.search);
     const urlLang = urlParams.get("aiLang");
 
-    // The selected language: URL param if present, otherwise first caption language
+    // The selected language: URL param if present, otherwise first AI content language
     const selectedLanguage = urlLang || availableLanguages[0] || "";
 
     // Show language selector only if there are multiple languages
@@ -1045,7 +1044,7 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                         },
                     }}
                 >
-                    {availableLanguages.map(lang => lang && (
+                    {availableLanguages.map(lang => (
                         <option key={lang} value={lang}>
                             {lang.toUpperCase()}
                         </option>
