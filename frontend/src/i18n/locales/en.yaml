@@ -211,6 +211,9 @@ video:
     flag-cancel: Cancel
     flag-submit: Report Issue
     flag-submitting: Reporting...
+    disclaimer: >-
+      AI-generated content may contain errors or inaccuracies.
+      Always verify information from reliable sources.
 
 series:
   singular: Series

@@ -211,6 +211,9 @@ video:
       Aidez-nous à nous améliorer en signalant les problèmes avec le contenu généré par IA.
       Votre signalement sera examiné par les administrateurs.
     flag-reason-label: 'Décrivez le problème (facultatif) :'
+    disclaimer: >-
+      Le contenu généré par l'IA peut contenir des erreurs ou des inexactitudes.
+      Vérifiez toujours les informations auprès de sources fiables.
     flag-reason-placeholder: 'par ex. Contient des informations inexactes, contenu inapproprié, etc.'
     flag-cancel: Annuler
     flag-submit: Signaler le problème

@@ -211,6 +211,9 @@ video:
     flag-reason-label: 'Beschreiben Sie das Problem (optional):'
     flag-reason-placeholder: 'z.B. Enthält ungenaue Informationen, unangemessene Inhalte, etc.'
     flag-cancel: Abbrechen
+    disclaimer: >-
+      KI-generierte Inhalte können Fehler oder Ungenauigkeiten enthalten.
+      Überprüfen Sie Informationen immer anhand zuverlässiger Quellen.
     flag-submit: Problem melden
     flag-submitting: Wird gemeldet...
 

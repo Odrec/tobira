@@ -211,6 +211,9 @@ video:
     flag-cancel: Annulla
     flag-submit: Segnala problema
     flag-submitting: Segnalazione in corso...
+    disclaimer: >-
+      I contenuti generati dall'IA possono contenere errori o inesattezze.
+      Verificare sempre le informazioni da fonti affidabili.
 
 series:
   singular: Serie
