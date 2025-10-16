@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useFragment, graphql } from "react-relay/hooks";
 import { useTranslation } from "react-i18next";
-import { LuSparkles, LuCheck, LuPencil } from "react-icons/lu";
+import { LuSparkles, LuCheck, LuPencil, LuChevronDown, LuChevronUp } from "react-icons/lu";
 
 import { AiSummary$key } from "./__generated__/AiSummary.graphql";
 import { COLORS } from "../color";
@@ -32,6 +32,7 @@ type Props = {
 export const AiSummary: React.FC<Props> = ({ fragmentRef }) => {
     const { t } = useTranslation();
     const data = useFragment(fragment, fragmentRef);
+    const [isExpanded, setIsExpanded] = useState(true);
 
     if (!data) {
         return null;
@@ -47,112 +48,139 @@ export const AiSummary: React.FC<Props> = ({ fragmentRef }) => {
             <div css={{
                 display: "flex",
                 alignItems: "center",
-                marginBottom: "1rem",
+                marginBottom: isExpanded ? "1rem" : 0,
                 gap: "0.5rem",
                 justifyContent: "space-between",
             }}>
-                <div css={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    css={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                        color: "inherit",
+                        "&:hover": {
+                            opacity: 0.8,
+                        },
+                    }}
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded
+                        ? t("video.ai-summary.collapse", "Collapse summary")
+                        : t("video.ai-summary.expand", "Expand summary")
+                    }
+                >
                     <LuSparkles size={24} />
                     <h3 css={{ margin: 0 }}>
                         {t("video.ai-summary.title", "AI-Generated Summary")}
                     </h3>
-                </div>
-                <div css={{
-                    display: "flex",
-                    gap: "0.75rem",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                }}>
-                    <FlagContentButton
-                        eventId={data.eventId}
-                        language={data.language}
-                        contentType="summary"
-                        flagged={data.flagged}
-                    />
-                    {data.editedByHuman && (
-                        <div css={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.35rem",
-                            fontSize: "0.85rem",
-                            color: COLORS.primary0,
-                            backgroundColor: COLORS.primary1,
-                            padding: "4px 10px",
-                            borderRadius: 4,
-                            fontWeight: 500,
-                        }} title={
-                            data.lastEditedBy
-                                ? t(
-                                    "video.ai-summary.edited-by",
-                                    "Edited by {{user}}",
-                                    { user: data.lastEditedBy },
-                                )
-                                : t("video.ai-summary.edited", "Edited by human")
-                        }>
-                            <LuPencil size={14} />
-                            {t("video.ai-summary.human-edited", "Edited")}
-                        </div>
-                    )}
-                    {data.approved && (
-                        <div css={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.35rem",
-                            fontSize: "0.85rem",
-                            color: COLORS.happy2,
-                            backgroundColor: COLORS.happy0,
-                            padding: "4px 10px",
-                            borderRadius: 4,
-                            fontWeight: 500,
-                        }} title={
-                            data.approvedBy
-                                ? t(
-                                    "video.ai-summary.approved-by",
-                                    "Approved by {{user}}",
-                                    { user: data.approvedBy },
-                                )
-                                : t("video.ai-summary.approved", "Approved by admin")
-                        }>
-                            <LuCheck size={14} />
-                            {t("video.ai-summary.approved-badge", "Approved")}
-                        </div>
-                    )}
+                    {isExpanded ? <LuChevronUp size={20} /> : <LuChevronDown size={20} />}
+                </button>
+                {isExpanded && (
                     <div css={{
+                        display: "flex",
+                        gap: "0.75rem",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                    }}>
+                        <FlagContentButton
+                            eventId={data.eventId}
+                            language={data.language}
+                            contentType="summary"
+                            flagged={data.flagged}
+                        />
+                        {data.editedByHuman && (
+                            <div css={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.35rem",
+                                fontSize: "0.85rem",
+                                color: COLORS.primary0,
+                                backgroundColor: COLORS.primary1,
+                                padding: "4px 10px",
+                                borderRadius: 4,
+                                fontWeight: 500,
+                            }} title={
+                                data.lastEditedBy
+                                    ? t(
+                                        "video.ai-summary.edited-by",
+                                        "Edited by {{user}}",
+                                        { user: data.lastEditedBy },
+                                    )
+                                    : t("video.ai-summary.edited", "Edited by human")
+                            }>
+                                <LuPencil size={14} />
+                                {t("video.ai-summary.human-edited", "Edited")}
+                            </div>
+                        )}
+                        {data.approved && (
+                            <div css={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.35rem",
+                                fontSize: "0.85rem",
+                                color: COLORS.happy2,
+                                backgroundColor: COLORS.happy0,
+                                padding: "4px 10px",
+                                borderRadius: 4,
+                                fontWeight: 500,
+                            }} title={
+                                data.approvedBy
+                                    ? t(
+                                        "video.ai-summary.approved-by",
+                                        "Approved by {{user}}",
+                                        { user: data.approvedBy },
+                                    )
+                                    : t("video.ai-summary.approved", "Approved by admin")
+                            }>
+                                <LuCheck size={14} />
+                                {t("video.ai-summary.approved-badge", "Approved")}
+                            </div>
+                        )}
+                        <div css={{
+                            fontSize: "0.85rem",
+                            color: COLORS.neutral40,
+                            fontWeight: 500,
+                        }}>
+                            {data.language.toUpperCase()}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {isExpanded && (
+                <>
+                    <div css={{
+                        lineHeight: 1.6,
+                        whiteSpace: "pre-wrap",
+                    }}>
+                        {data.summary}
+                    </div>
+
+                    <div css={{
+                        marginTop: "1rem",
                         fontSize: "0.85rem",
                         color: COLORS.neutral40,
-                        fontWeight: 500,
                     }}>
-                        {data.language.toUpperCase()}
-                    </div>
-                </div>
-            </div>
-
-            <div css={{
-                lineHeight: 1.6,
-                whiteSpace: "pre-wrap",
-            }}>
-                {data.summary}
-            </div>
-
-            <div css={{
-                marginTop: "1rem",
-                fontSize: "0.85rem",
-                color: COLORS.neutral40,
-            }}>
-                <div css={{ fontStyle: "italic", marginBottom: "0.5rem" }}>
-                    {t("video.ai-summary.generated-by", "Generated by")} {data.model}
-                </div>
-                <div css={{
-                    fontSize: "0.8rem",
-                    color: COLORS.neutral50,
-                }}>
+                        <div css={{ fontStyle: "italic", marginBottom: "0.5rem" }}>
+                            {t("video.ai-summary.generated-by", "Generated by")} {data.model}
+                        </div>
+                        <div css={{
+                            fontSize: "0.8rem",
+                            color: COLORS.neutral50,
+                        }}>
                     ⚠️ {t(
-                        "video.ai-content.disclaimer",
-                        "AI-generated content may contain errors or inaccuracies. "
+                                "video.ai-content.disclaimer",
+                                "AI-generated content may contain errors or inaccuracies. "
                         + "Always verify information from reliable sources.",
-                    )}
-                </div>
-            </div>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
