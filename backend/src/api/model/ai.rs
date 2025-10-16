@@ -5,10 +5,11 @@ use serde_json::Value as JsonValue;
 
 use crate::{
     api::{
-        err::ApiResult,
+        err::{ApiResult, invalid_input},
         Context,
         Id,
     },
+    auth::AuthState,
     db::util::impl_from_db,
     model::Key,
     prelude::*,
@@ -22,6 +23,7 @@ use crate::{
 /// Represents an AI-generated summary of video content
 #[derive(Debug)]
 pub(crate) struct AiSummary {
+    pub(crate) id: i64,
     pub(crate) event_id: Key,
     pub(crate) language: String,
     pub(crate) summary: String,
@@ -29,12 +31,20 @@ pub(crate) struct AiSummary {
     pub(crate) processing_time_ms: Option<i32>,
     pub(crate) created_at: DateTime<Utc>,
     pub(crate) updated_at: DateTime<Utc>,
+    pub(crate) approved: bool,
+    pub(crate) approved_at: Option<DateTime<Utc>>,
+    pub(crate) approved_by: Option<String>,
+    pub(crate) edited_by_human: bool,
+    pub(crate) last_edited_by: Option<String>,
+    pub(crate) flagged: bool,
+    pub(crate) flag_count: i32,
 }
 
 impl_from_db!(
     AiSummary,
     select: {
         ai_summaries.{
+            id,
             event_id,
             language,
             summary,
@@ -42,10 +52,18 @@ impl_from_db!(
             processing_time_ms,
             created_at,
             updated_at,
+            approved,
+            approved_at,
+            approved_by,
+            edited_by_human,
+            last_edited_by,
+            flagged,
+            flag_count,
         },
     },
     |row| {
         Self {
+            id: row.id(),
             event_id: row.event_id(),
             language: row.language(),
             summary: row.summary(),
@@ -53,6 +71,13 @@ impl_from_db!(
             processing_time_ms: row.processing_time_ms(),
             created_at: row.created_at(),
             updated_at: row.updated_at(),
+            approved: row.approved(),
+            approved_at: row.approved_at(),
+            approved_by: row.approved_by(),
+            edited_by_human: row.edited_by_human(),
+            last_edited_by: row.last_edited_by(),
+            flagged: row.flagged(),
+            flag_count: row.flag_count(),
         }
     }
 );
@@ -92,6 +117,41 @@ impl AiSummary {
     /// When this summary was last updated
     fn updated_at(&self) -> DateTime<Utc> {
         self.updated_at
+    }
+
+    /// Whether this summary has been approved by an admin
+    fn approved(&self) -> bool {
+        self.approved
+    }
+
+    /// When this summary was approved
+    fn approved_at(&self) -> Option<DateTime<Utc>> {
+        self.approved_at
+    }
+
+    /// Username of the admin who approved this summary
+    fn approved_by(&self) -> Option<&str> {
+        self.approved_by.as_deref()
+    }
+
+    /// Whether this summary has been manually edited by a human
+    fn edited_by_human(&self) -> bool {
+        self.edited_by_human
+    }
+
+    /// Username of the last person who edited this summary
+    fn last_edited_by(&self) -> Option<&str> {
+        self.last_edited_by.as_deref()
+    }
+
+    /// Whether this summary has been flagged for review
+    fn flagged(&self) -> bool {
+        self.flagged
+    }
+
+    /// Number of times this summary has been flagged
+    fn flag_count(&self) -> i32 {
+        self.flag_count
     }
 }
 
@@ -144,6 +204,7 @@ impl AiSummary {
 /// Represents an AI-generated quiz for a video
 #[derive(Debug)]
 pub(crate) struct AiQuiz {
+    pub(crate) id: i64,
     pub(crate) event_id: Key,
     pub(crate) language: String,
     pub(crate) quiz_data: JsonValue,
@@ -151,12 +212,20 @@ pub(crate) struct AiQuiz {
     pub(crate) processing_time_ms: Option<i32>,
     pub(crate) created_at: DateTime<Utc>,
     pub(crate) updated_at: DateTime<Utc>,
+    pub(crate) approved: bool,
+    pub(crate) approved_at: Option<DateTime<Utc>>,
+    pub(crate) approved_by: Option<String>,
+    pub(crate) edited_by_human: bool,
+    pub(crate) last_edited_by: Option<String>,
+    pub(crate) flagged: bool,
+    pub(crate) flag_count: i32,
 }
 
 impl_from_db!(
     AiQuiz,
     select: {
         ai_quizzes.{
+            id,
             event_id,
             language,
             quiz_data,
@@ -164,10 +233,18 @@ impl_from_db!(
             processing_time_ms,
             created_at,
             updated_at,
+            approved,
+            approved_at,
+            approved_by,
+            edited_by_human,
+            last_edited_by,
+            flagged,
+            flag_count,
         },
     },
     |row| {
         Self {
+            id: row.id(),
             event_id: row.event_id(),
             language: row.language(),
             quiz_data: row.quiz_data(),
@@ -175,6 +252,13 @@ impl_from_db!(
             processing_time_ms: row.processing_time_ms(),
             created_at: row.created_at(),
             updated_at: row.updated_at(),
+            approved: row.approved(),
+            approved_at: row.approved_at(),
+            approved_by: row.approved_by(),
+            edited_by_human: row.edited_by_human(),
+            last_edited_by: row.last_edited_by(),
+            flagged: row.flagged(),
+            flag_count: row.flag_count(),
         }
     }
 );
@@ -224,6 +308,41 @@ impl AiQuiz {
     /// When this quiz was last updated
     fn updated_at(&self) -> DateTime<Utc> {
         self.updated_at
+    }
+
+    /// Whether this quiz has been approved by an admin
+    fn approved(&self) -> bool {
+        self.approved
+    }
+
+    /// When this quiz was approved
+    fn approved_at(&self) -> Option<DateTime<Utc>> {
+        self.approved_at
+    }
+
+    /// Username of the admin who approved this quiz
+    fn approved_by(&self) -> Option<&str> {
+        self.approved_by.as_deref()
+    }
+
+    /// Whether this quiz has been manually edited by a human
+    fn edited_by_human(&self) -> bool {
+        self.edited_by_human
+    }
+
+    /// Username of the last person who edited this quiz
+    fn last_edited_by(&self) -> Option<&str> {
+        self.last_edited_by.as_deref()
+    }
+
+    /// Whether this quiz has been flagged for review
+    fn flagged(&self) -> bool {
+        self.flagged
+    }
+
+    /// Number of times this quiz has been flagged
+    fn flag_count(&self) -> i32 {
+        self.flag_count
     }
 }
 
@@ -354,5 +473,110 @@ where
     }
 
     deserializer.deserialize_any(CorrectAnswerVisitor)
+}
+
+
+// ============================================
+// Content Flagging
+// ============================================
+
+impl AiSummary {
+    /// Flag a summary for review
+    pub(crate) async fn flag(
+        event_id: Key,
+        language: String,
+        reason: Option<String>,
+        context: &Context,
+    ) -> ApiResult<Self> {
+        // Get username if user is logged in
+        let username = match &context.auth.state {
+            AuthState::User(user) => Some(user.username.clone()),
+            _ => None,
+        };
+        
+        // Load the summary
+        let query = format!(
+            "select {} from ai_summaries where event_id = $1 and language = $2",
+            Self::select()
+        );
+        let summary = context.db
+            .query_opt(&query, &[&event_id, &language])
+            .await?
+            .ok_or_else(|| {
+                invalid_input!("AI summary not found for this event and language")
+            })?;
+        let summary = Self::from_row_start(&summary);
+        
+        // Insert the flag
+        context.db.execute(
+            "insert into ai_content_flags \
+             (content_type, content_id, event_id, username, reason) \
+             values ('summary', $1, $2, $3, $4)",
+            &[&summary.id, &event_id, &username, &reason],
+        ).await?;
+        
+        // Update the summary's flag status
+        context.db.execute(
+            "update ai_summaries \
+             set flagged = true, flag_count = flag_count + 1, updated_at = now() \
+             where id = $1",
+            &[&summary.id],
+        ).await?;
+        
+        // Reload and return the updated summary
+        Self::load_for_event(event_id, Some(language), context)
+            .await?
+            .ok_or_else(|| invalid_input!("AI summary not found"))
+    }
+}
+
+impl AiQuiz {
+    /// Flag a quiz for review
+    pub(crate) async fn flag(
+        event_id: Key,
+        language: String,
+        reason: Option<String>,
+        context: &Context,
+    ) -> ApiResult<Self> {
+        // Get username if user is logged in
+        let username = match &context.auth.state {
+            AuthState::User(user) => Some(user.username.clone()),
+            _ => None,
+        };
+        
+        // Load the quiz
+        let query = format!(
+            "select {} from ai_quizzes where event_id = $1 and language = $2",
+            Self::select()
+        );
+        let quiz = context.db
+            .query_opt(&query, &[&event_id, &language])
+            .await?
+            .ok_or_else(|| {
+                invalid_input!("AI quiz not found for this event and language")
+            })?;
+        let quiz = Self::from_row_start(&quiz);
+        
+        // Insert the flag
+        context.db.execute(
+            "insert into ai_content_flags \
+             (content_type, content_id, event_id, username, reason) \
+             values ('quiz', $1, $2, $3, $4)",
+            &[&quiz.id, &event_id, &username, &reason],
+        ).await?;
+        
+        // Update the quiz's flag status
+        context.db.execute(
+            "update ai_quizzes \
+             set flagged = true, flag_count = flag_count + 1, updated_at = now() \
+             where id = $1",
+            &[&quiz.id],
+        ).await?;
+        
+        // Reload and return the updated quiz
+        Self::load_for_event(event_id, Some(language), context)
+            .await?
+            .ok_or_else(|| invalid_input!("AI quiz not found"))
+    }
 }
 

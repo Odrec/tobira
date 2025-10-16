@@ -196,6 +196,21 @@ video:
     next: Next
     explanation: 'Explanation:'
     seek-to-topic: Jump to topic in video
+  ai-content:
+    flag-button: Report
+    flag-tooltip: Report an issue with this content
+    flagged: Flagged
+    flagged-tooltip: This content has been flagged for review
+    flag-error: Failed to report content. Please try again.
+    flag-dialog-title: Report Content Issue
+    flag-dialog-description: >
+      Help us improve by reporting issues with AI-generated content.
+      Your report will be reviewed by administrators.
+    flag-reason-label: 'Describe the issue (optional):'
+    flag-reason-placeholder: 'e.g., Contains inaccurate information, inappropriate content, etc.'
+    flag-cancel: Cancel
+    flag-submit: Report Issue
+    flag-submitting: Reporting...
 
 series:
   singular: Series

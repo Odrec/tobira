@@ -189,6 +189,32 @@ video:
       id: Identifiant
       submit: Vérifier
     invalid-credentials: Identifiants invalides.
+  ai-summary:
+    title: Résumé généré par IA
+    generated-by: Généré par
+  ai-quiz:
+    title: Quiz interactif
+    score: 'Score :'
+    question-number: Question {{current}} sur {{total}}
+    previous: Précédent
+    next: Suivant
+    explanation: 'Explication :'
+    seek-to-topic: Aller au sujet dans la vidéo
+  ai-content:
+    flag-button: Signaler
+    flag-tooltip: Signaler un problème avec ce contenu
+    flagged: Signalé
+    flagged-tooltip: Ce contenu a été signalé pour révision
+    flag-error: Échec du signalement du contenu. Veuillez réessayer.
+    flag-dialog-title: Signaler un problème de contenu
+    flag-dialog-description: >
+      Aidez-nous à nous améliorer en signalant les problèmes avec le contenu généré par IA.
+      Votre signalement sera examiné par les administrateurs.
+    flag-reason-label: 'Décrivez le problème (facultatif) :'
+    flag-reason-placeholder: 'par ex. Contient des informations inexactes, contenu inapproprié, etc.'
+    flag-cancel: Annuler
+    flag-submit: Signaler le problème
+    flag-submitting: Signalement en cours...
 
 series:
   singular: Série

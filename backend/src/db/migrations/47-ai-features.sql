@@ -74,7 +74,7 @@ create table if not exists ai_quizzes (
     updated_at timestamptz not null default now(),
     unique(event_id, language),
     constraint valid_quiz_data check (
-        jsonb_typeof(quiz_data) = 'object' 
+        jsonb_typeof(quiz_data) = 'object'
         and quiz_data ? 'questions'
         and jsonb_typeof(quiz_data->'questions') = 'array'
     )
@@ -145,5 +145,5 @@ comment on table ai_processing_queue is
     'Queue for async AI processing jobs (Phase 2 feature)';
 comment on column ai_processing_queue.task_type is 
     'Type of task: summary, quiz, chat_index';
-comment on column ai_processing_queue.status is 
+comment on column ai_processing_queue.status is
     'Status: pending, processing, completed, failed';

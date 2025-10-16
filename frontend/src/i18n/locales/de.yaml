@@ -187,6 +187,32 @@ video:
       id: Kennung
       submit: Freischalten
     invalid-credentials: Ungültige Zugangsdaten.
+  ai-summary:
+    title: KI-Generierte Zusammenfassung
+    generated-by: Generiert von
+  ai-quiz:
+    title: Interaktives Quiz
+    score: 'Punktzahl:'
+    question-number: Frage {{current}} von {{total}}
+    previous: Zurück
+    next: Weiter
+    explanation: 'Erklärung:'
+    seek-to-topic: Zum Thema im Video springen
+  ai-content:
+    flag-button: Melden
+    flag-tooltip: Problem mit diesem Inhalt melden
+    flagged: Gemeldet
+    flagged-tooltip: Dieser Inhalt wurde zur Überprüfung gemeldet
+    flag-error: Fehler beim Melden des Inhalts. Bitte versuchen Sie es erneut.
+    flag-dialog-title: Inhaltsproblem melden
+    flag-dialog-description: >
+      Helfen Sie uns zu verbessern, indem Sie Probleme mit KI-generierten Inhalten melden.
+      Ihre Meldung wird von Administratoren überprüft.
+    flag-reason-label: 'Beschreiben Sie das Problem (optional):'
+    flag-reason-placeholder: 'z.B. Enthält ungenaue Informationen, unangemessene Inhalte, etc.'
+    flag-cancel: Abbrechen
+    flag-submit: Problem melden
+    flag-submitting: Wird gemeldet...
 
 series:
   singular: Serie

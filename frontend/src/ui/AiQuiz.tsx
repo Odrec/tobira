@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { useFragment, graphql } from "react-relay/hooks";
 import { useTranslation } from "react-i18next";
 import { Button } from "@opencast/appkit";
-import { LuCheck, LuX, LuCircle } from "react-icons/lu";
+import { LuCheck, LuX, LuCircle, LuPencil } from "react-icons/lu";
 
 import { AiQuiz$key } from "./__generated__/AiQuiz.graphql";
 import { COLORS } from "../color";
+import { FlagContentButton } from "./FlagContentButton";
 
 const fragment = graphql`
   fragment AiQuiz on AiQuiz {
+    eventId
     language
     questions {
       question
@@ -21,6 +23,13 @@ const fragment = graphql`
     }
     model
     createdAt
+    approved
+    approvedAt
+    approvedBy
+    editedByHuman
+    lastEditedBy
+    flagged
+    flagCount
   }
 `;
 
@@ -110,7 +119,66 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
                     <LuCircle size={24} />
                     {t("video.ai-quiz.title", "Interactive Quiz")}
                 </h3>
-                <div css={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                <div css={{
+                    display: "flex",
+                    gap: "0.75rem",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                }}>
+                    <FlagContentButton
+                        eventId={data.eventId}
+                        language={data.language}
+                        contentType="quiz"
+                        flagged={data.flagged}
+                    />
+                    {data.editedByHuman && (
+                        <div css={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.35rem",
+                            fontSize: "0.85rem",
+                            color: COLORS.primary0,
+                            backgroundColor: COLORS.primary1,
+                            padding: "4px 10px",
+                            borderRadius: 4,
+                            fontWeight: 500,
+                        }} title={
+                            data.lastEditedBy
+                                ? t(
+                                    "video.ai-quiz.edited-by",
+                                    "Edited by {{user}}",
+                                    { user: data.lastEditedBy },
+                                )
+                                : t("video.ai-quiz.edited", "Edited by human")
+                        }>
+                            <LuPencil size={14} />
+                            {t("video.ai-quiz.human-edited", "Edited")}
+                        </div>
+                    )}
+                    {data.approved && (
+                        <div css={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.35rem",
+                            fontSize: "0.85rem",
+                            color: COLORS.happy2,
+                            backgroundColor: COLORS.happy0,
+                            padding: "4px 10px",
+                            borderRadius: 4,
+                            fontWeight: 500,
+                        }} title={
+                            data.approvedBy
+                                ? t(
+                                    "video.ai-quiz.approved-by",
+                                    "Approved by {{user}}",
+                                    { user: data.approvedBy },
+                                )
+                                : t("video.ai-quiz.approved", "Approved by admin")
+                        }>
+                            <LuCheck size={14} />
+                            {t("video.ai-quiz.approved-badge", "Approved")}
+                        </div>
+                    )}
                     <div css={{
                         fontSize: "0.85rem",
                         color: COLORS.neutral40,

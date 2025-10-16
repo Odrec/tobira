@@ -380,4 +380,5 @@ static MIGRATIONS: Lazy<BTreeMap<u64, Migration>> = include_migrations![
     45: "custom-user-realm-path",
     46: "known-groups-sort-key",
     47: "ai-features",
+    48: "ai-content-flags",
 ];

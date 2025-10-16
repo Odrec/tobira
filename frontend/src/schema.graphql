@@ -359,6 +359,20 @@ type AiQuiz {
   createdAt: DateTime!
   "When this quiz was last updated"
   updatedAt: DateTime!
+  "Whether this quiz has been approved by an admin"
+  approved: Boolean!
+  "When this quiz was approved"
+  approvedAt: DateTime
+  "Username of the admin who approved this quiz"
+  approvedBy: String
+  "Whether this quiz has been manually edited by a human"
+  editedByHuman: Boolean!
+  "Username of the last person who edited this quiz"
+  lastEditedBy: String
+  "Whether this quiz has been flagged for review"
+  flagged: Boolean!
+  "Number of times this quiz has been flagged"
+  flagCount: Int!
 }
 
 type AiSummary {
@@ -376,6 +390,20 @@ type AiSummary {
   createdAt: DateTime!
   "When this summary was last updated"
   updatedAt: DateTime!
+  "Whether this summary has been approved by an admin"
+  approved: Boolean!
+  "When this summary was approved"
+  approvedAt: DateTime
+  "Username of the admin who approved this summary"
+  approvedBy: String
+  "Whether this summary has been manually edited by a human"
+  editedByHuman: Boolean!
+  "Username of the last person who edited this summary"
+  lastEditedBy: String
+  "Whether this summary has been flagged for review"
+  flagged: Boolean!
+  "Number of times this summary has been flagged"
+  flagCount: Int!
 }
 
 type ArrayMatch {
@@ -657,6 +685,16 @@ type Mutation {
     and adds a block with the given series at the leaf.
   """
   mountSeries(series: NewSeries!, parentRealmPath: String!, newRealms: [RealmSpecifier!]! = []): Realm!
+  """
+    Flag an AI-generated summary for review by administrators.
+    Users can optionally provide a reason describing the issue.
+  """
+  flagAiSummary(eventId: ID!, language: String!, reason: String = null): AiSummary!
+  """
+    Flag an AI-generated quiz for review by administrators.
+    Users can optionally provide a reason describing the issue.
+  """
+  flagAiQuiz(eventId: ID!, language: String!, reason: String = null): AiQuiz!
 }
 
 type NotAllowed {

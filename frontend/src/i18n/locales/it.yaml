@@ -185,6 +185,32 @@ video:
       id: Identificativo
       submit: Verifica
     invalid-credentials: Credenziali non valide.
+  ai-summary:
+    title: Riepilogo generato da IA
+    generated-by: Generato da
+  ai-quiz:
+    title: Quiz interattivo
+    score: 'Punteggio:'
+    question-number: Domanda {{current}} di {{total}}
+    previous: Precedente
+    next: Successivo
+    explanation: 'Spiegazione:'
+    seek-to-topic: Vai all'argomento nel video
+  ai-content:
+    flag-button: Segnala
+    flag-tooltip: Segnala un problema con questo contenuto
+    flagged: Segnalato
+    flagged-tooltip: Questo contenuto è stato segnalato per la revisione
+    flag-error: Impossibile segnalare il contenuto. Riprova.
+    flag-dialog-title: Segnala problema di contenuto
+    flag-dialog-description: >
+      Aiutaci a migliorare segnalando problemi con i contenuti generati dall'IA.
+      La tua segnalazione sarà esaminata dagli amministratori.
+    flag-reason-label: 'Descrivi il problema (facoltativo):'
+    flag-reason-placeholder: 'es. Contiene informazioni imprecise, contenuto inappropriato, ecc.'
+    flag-cancel: Annulla
+    flag-submit: Segnala problema
+    flag-submitting: Segnalazione in corso...
 
 series:
   singular: Serie

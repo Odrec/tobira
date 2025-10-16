@@ -2,7 +2,7 @@ use juniper::graphql_object;
 
 use super::{
     Context,
-    err::ApiResult,
+    err::{ApiResult, invalid_input},
     id::Id,
     model::{
         acl::AclInputEntry,
@@ -37,6 +37,7 @@ use super::{
             RemovedBlock,
         },
         event::{AuthorizedEvent, NewEvent},
+        ai::{AiSummary, AiQuiz},
     },
 };
 
@@ -352,5 +353,33 @@ impl Mutation {
         context: &Context,
     ) -> ApiResult<Realm> {
         Series::mount(series, parent_realm_path, new_realms, context).await
+    }
+
+    /// Flag an AI-generated summary for review by administrators.
+    /// Users can optionally provide a reason describing the issue.
+    async fn flag_ai_summary(
+        event_id: Id,
+        language: String,
+        #[graphql(default = None)]
+        reason: Option<String>,
+        context: &Context,
+    ) -> ApiResult<AiSummary> {
+        let event_key = event_id.key_for(Id::EVENT_KIND)
+            .ok_or_else(|| invalid_input!("invalid event ID"))?;
+        AiSummary::flag(event_key, language, reason, context).await
+    }
+
+    /// Flag an AI-generated quiz for review by administrators.
+    /// Users can optionally provide a reason describing the issue.
+    async fn flag_ai_quiz(
+        event_id: Id,
+        language: String,
+        #[graphql(default = None)]
+        reason: Option<String>,
+        context: &Context,
+    ) -> ApiResult<AiQuiz> {
+        let event_key = event_id.key_for(Id::EVENT_KIND)
+            .ok_or_else(|| invalid_input!("invalid event ID"))?;
+        AiQuiz::flag(event_key, language, reason, context).await
     }
 }
