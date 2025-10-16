@@ -49,12 +49,13 @@ export const FlagContentButton: React.FC<Props> = ({
     eventId,
     language,
     contentType,
-    flagged,
+    flagged: initialFlagged,
 }) => {
     const { t } = useTranslation();
     const [showDialog, setShowDialog] = useState(false);
     const [reason, setReason] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [flagged, setFlagged] = useState(initialFlagged ?? false);
 
     const [commitSummaryMutation] = useMutation<FlagContentButtonFlagSummaryMutation>(
         flagSummaryMutation,
@@ -85,6 +86,8 @@ export const FlagContentButton: React.FC<Props> = ({
                 setIsSubmitting(false);
                 setShowDialog(false);
                 setReason("");
+                // Update local state immediately to show flagged status
+                setFlagged(true);
             },
             onError: () => {
                 setIsSubmitting(false);
