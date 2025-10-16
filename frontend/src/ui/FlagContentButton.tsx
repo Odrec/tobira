@@ -86,10 +86,12 @@ export const FlagContentButton: React.FC<Props> = ({
                 setShowDialog(false);
                 setReason("");
             },
-            onError: error => {
+            onError: () => {
                 setIsSubmitting(false);
-                console.error("Failed to flag content:", error);
-                alert(t("video.ai-content.flag-error", "Failed to report content. Please try again."));
+                alert(t(
+                    "video.ai-content.flag-error",
+                    "Failed to report content. Please try again.",
+                ));
             },
         });
     };
@@ -219,7 +221,8 @@ export const FlagContentButton: React.FC<Props> = ({
                                 onChange={e => setReason(e.target.value)}
                                 placeholder={t(
                                     "video.ai-content.flag-reason-placeholder",
-                                    "e.g., Contains inaccurate information, inappropriate content, etc.",
+                                    "e.g., Contains inaccurate information, "
+                                    + "inappropriate content, etc.",
                                 )}
                                 css={{
                                     width: "100%",

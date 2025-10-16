@@ -327,7 +327,11 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
                     fontSize: "0.8rem",
                     color: COLORS.neutral50,
                 }}>
-                    ⚠️ {t("video.ai-content.disclaimer", "AI-generated content may contain errors or inaccuracies. Always verify information from reliable sources.")}
+                    ⚠️ {t(
+                        "video.ai-content.disclaimer",
+                        "AI-generated content may contain errors or inaccuracies. "
+                        + "Always verify information from reliable sources.",
+                    )}
                 </div>
             </div>
         </div>
