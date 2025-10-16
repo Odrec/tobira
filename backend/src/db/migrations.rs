@@ -381,4 +381,5 @@ static MIGRATIONS: Lazy<BTreeMap<u64, Migration>> = include_migrations![
     46: "known-groups-sort-key",
     47: "ai-features",
     48: "ai-content-flags",
+    49: "remove-language-defaults",
 ];
