@@ -34,8 +34,8 @@ const fragment = graphql`
 `;
 
 type Props = {
-  fragmentRef: AiQuiz$key;
-  onSeekToTimestamp?: (seconds: number) => void;
+    fragmentRef: AiQuiz$key;
+    onSeekToTimestamp?: (seconds: number) => Promise<boolean>;
 };
 
 export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
@@ -47,6 +47,8 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
     const [showExplanation, setShowExplanation] = useState(false);
     const [score, setScore] = useState(0);
     const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
+    const [isJumping, setIsJumping] = useState(false);
+    const [jumpSuccess, setJumpSuccess] = useState(false);
 
     if (!data || !data.questions || data.questions.length === 0) {
         return null;
@@ -97,9 +99,20 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
         }
     };
 
-    const handleSeek = () => {
+    const handleSeek = async () => {
         if (question.timestamp != null && onSeekToTimestamp) {
-            onSeekToTimestamp(question.timestamp);
+            setIsJumping(true);
+            setJumpSuccess(false);
+            try {
+                const success = await onSeekToTimestamp(question.timestamp);
+                setJumpSuccess(success);
+                // Clear success message after 2 seconds
+                if (success) {
+                    setTimeout(() => setJumpSuccess(false), 2000);
+                }
+            } finally {
+                setIsJumping(false);
+            }
         }
     };
 
@@ -344,8 +357,23 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
                         </div>
 
                         {question.timestamp != null && onSeekToTimestamp && (
-                            <Button onClick={handleSeek}>
-                                {t("video.ai-quiz.seek-to-topic", "Jump to topic in video")}
+                            <Button
+                                onClick={handleSeek}
+                                disabled={isJumping}
+                                css={{
+                                    position: "relative",
+                                    backgroundColor: jumpSuccess ? COLORS.happy1 : undefined,
+                                    "&:hover:not([disabled])": {
+                                        backgroundColor: jumpSuccess ? COLORS.happy1 : undefined,
+                                    },
+                                }}
+                            >
+                                {isJumping
+                                    ? t("video.ai-quiz.jumping", "Jumping...")
+                                    : jumpSuccess
+                                        ? t("video.ai-quiz.jumped", "✓ Jumped to video")
+                                        : t("video.ai-quiz.seek-to-topic", "Jump to topic in video")
+                                }
                             </Button>
                         )}
                     </div>

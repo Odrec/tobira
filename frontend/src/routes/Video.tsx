@@ -1064,7 +1064,7 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                     // Integration with video player to seek to timestamp
                     if (!paella.current?.player?.videoContainer || !paella.current?.loadPromise) {
                         // Video player not ready yet
-                        return;
+                        return false;
                     }
                     try {
                         // Wait for player to be fully loaded
@@ -1083,8 +1083,21 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                         // Seek to the timestamp
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         await paella.current.player.videoContainer.setCurrentTime(seconds);
+
+                        // Scroll the video player into view for user feedback
+
+                        const playerElement = paella.current.player.containerElement as HTMLElement;
+                        if (playerElement) {
+                            playerElement.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                            });
+                        }
+
+                        return true;
                     } catch {
                         // Failed to seek to timestamp
+                        return false;
                     }
                 }}
             />
