@@ -10,7 +10,7 @@ CREATE TABLE ai_cumulative_quizzes (
     event_id bigint NOT NULL REFERENCES all_events(id) ON DELETE CASCADE,
     
     -- The series this quiz covers
-    series_id bigint NOT NULL REFERENCES series(id) ON DELETE CASCADE,
+    series_id bigint NOT NULL REFERENCES all_series(id) ON DELETE CASCADE,
     
     -- Language for internationalization
     language varchar(10) NOT NULL,
