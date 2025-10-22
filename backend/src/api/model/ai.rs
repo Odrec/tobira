@@ -578,5 +578,360 @@ impl AiQuiz {
             .await?
             .ok_or_else(|| invalid_input!("AI quiz not found"))
     }
+
+// ============================================
+// Cumulative Quiz
+// ============================================
+
+/// Represents an AI-generated cumulative quiz covering multiple videos in a series
+#[derive(Debug)]
+pub(crate) struct AiCumulativeQuiz {
+    pub(crate) id: i64,
+    pub(crate) event_id: Key,
+    pub(crate) series_id: Key,
+    pub(crate) language: String,
+    pub(crate) questions: JsonValue,
+    pub(crate) model: String,
+    pub(crate) processing_time_ms: Option<i32>,
+    pub(crate) created_at: DateTime<Utc>,
+    pub(crate) updated_at: DateTime<Utc>,
+    pub(crate) approved: bool,
+    pub(crate) approved_at: Option<DateTime<Utc>>,
+    pub(crate) approved_by: Option<String>,
+    pub(crate) edited_by_human: bool,
+    pub(crate) last_edited_by: Option<String>,
+    pub(crate) flagged: bool,
+    pub(crate) flag_count: i32,
+    pub(crate) included_event_ids: Vec<Key>,
+    pub(crate) video_count: i32,
+}
+
+impl_from_db!(
+    AiCumulativeQuiz,
+    select: {
+        ai_cumulative_quizzes.{
+            id,
+            event_id,
+            series_id,
+            language,
+            questions,
+            model,
+            processing_time_ms,
+            created_at,
+            updated_at,
+            approved,
+            approved_at,
+            approved_by,
+            edited_by_human,
+            last_edited_by,
+            flagged,
+            flag_count,
+            included_event_ids,
+            video_count,
+        },
+    },
+    |row| {
+        Self {
+            id: row.id(),
+            event_id: row.event_id(),
+            series_id: row.series_id(),
+            language: row.language(),
+            questions: row.questions(),
+            model: row.model(),
+            processing_time_ms: row.processing_time_ms(),
+            created_at: row.created_at(),
+            updated_at: row.updated_at(),
+            approved: row.approved(),
+            approved_at: row.approved_at(),
+            approved_by: row.approved_by(),
+            edited_by_human: row.edited_by_human(),
+            last_edited_by: row.last_edited_by(),
+            flagged: row.flagged(),
+            flag_count: row.flag_count(),
+            included_event_ids: row.included_event_ids(),
+            video_count: row.video_count(),
+        }
+    }
+);
+
+#[graphql_object(Context = Context)]
+impl AiCumulativeQuiz {
+    /// The event this cumulative quiz is accessed from
+    fn event_id(&self) -> Id {
+        Id::event(self.event_id)
+    }
+
+    /// The series this cumulative quiz covers
+    fn series_id(&self) -> Id {
+        Id::series(self.series_id)
+    }
+
+    /// Language code of the quiz (e.g., 'en', 'de')
+    fn language(&self) -> &str {
+        &self.language
+    }
+
+    /// The cumulative quiz questions with video context
+    fn questions(&self) -> Vec<CumulativeQuizQuestion> {
+        // Parse the questions JSON array
+        self.questions
+            .as_array()
+            .map(|questions| {
+                questions
+                    .iter()
+                    .filter_map(|q| serde_json::from_value(q.clone()).ok())
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// Information about videos included in this quiz
+    fn included_videos(&self) -> Vec<VideoInfo> {
+        // Extract video info from questions
+        let questions = self.questions();
+        let mut video_map: std::collections::HashMap<String, (String, i32, usize)> = 
+            std::collections::HashMap::new();
+
+        for question in questions {
+            let ctx = &question.video_context;
+            let entry = video_map.entry(ctx.event_id.clone())
+                .or_insert((ctx.video_title.clone(), ctx.video_number, 0));
+            entry.2 += 1; // Increment question count
+        }
+
+        let mut videos: Vec<_> = video_map.into_iter()
+            .map(|(event_id, (title, position, count))| VideoInfo {
+                event_id,
+                title,
+                position,
+                question_count: count as i32,
+            })
+            .collect();
+        
+        videos.sort_by_key(|v| v.position);
+        videos
+    }
+
+    /// Number of videos included in this cumulative quiz
+    fn video_count(&self) -> i32 {
+        self.video_count
+    }
+
+    /// OpenAI model used to generate this quiz
+    fn model(&self) -> &str {
+        &self.model
+    }
+
+    /// Time taken to generate the quiz in milliseconds
+    fn processing_time_ms(&self) -> Option<i32> {
+        self.processing_time_ms
+    }
+
+    /// When this quiz was created
+    fn created_at(&self) -> DateTime<Utc> {
+        self.created_at
+    }
+
+    /// When this quiz was last updated
+    fn updated_at(&self) -> DateTime<Utc> {
+        self.updated_at
+    }
+
+    /// Whether this quiz has been approved by an admin
+    fn approved(&self) -> bool {
+        self.approved
+    }
+
+    /// When this quiz was approved
+    fn approved_at(&self) -> Option<DateTime<Utc>> {
+        self.approved_at
+    }
+
+    /// Username of the admin who approved this quiz
+    fn approved_by(&self) -> Option<&str> {
+        self.approved_by.as_deref()
+    }
+
+    /// Whether this quiz has been manually edited by a human
+    fn edited_by_human(&self) -> bool {
+        self.edited_by_human
+    }
+
+    /// Username of the last person who edited this quiz
+    fn last_edited_by(&self) -> Option<&str> {
+        self.last_edited_by.as_deref()
+    }
+
+    /// Whether this quiz has been flagged for review
+    fn flagged(&self) -> bool {
+        self.flagged
+    }
+
+    /// Number of times this quiz has been flagged
+    fn flag_count(&self) -> i32 {
+        self.flag_count
+    }
+}
+
+impl AiCumulativeQuiz {
+    /// Load cumulative quiz for a specific event and language
+    pub(crate) async fn load_for_event(
+        event_id: Key,
+        language: &str,
+        context: &Context,
+    ) -> ApiResult<Option<Self>> {
+        let selection = Self::select();
+        let query = format!(
+            "SELECT {selection} FROM ai_cumulative_quizzes \
+             WHERE event_id = $1 AND language = $2"
+        );
+
+        context.db
+            .query_opt(&query, &[&event_id, &language])
+            .await?
+            .map(|row| Self::from_row_start(&row))
+            .pipe(Ok)
+    }
+
+    /// Check if an event can have a cumulative quiz (is part of a series)
+    pub(crate) async fn can_generate(
+        event_id: Key,
+        context: &Context,
+    ) -> ApiResult<bool> {
+        let query = "
+            SELECT series FROM all_events 
+            WHERE id = $1 AND series IS NOT NULL AND state = 'ready'
+        ";
+        
+        let has_series = context.db
+            .query_opt(query, &[&event_id])
+            .await?
+            .is_some();
+            
+        Ok(has_series)
+    }
+
+    /// Get the position of an event within its series (1-based)
+    pub(crate) async fn get_series_position(
+        event_id: Key,
+        context: &Context,
+    ) -> ApiResult<Option<i32>> {
+        // Using the proven ordering logic from schema investigation
+        let query = "
+            WITH ordered_events AS (
+                SELECT 
+                    id,
+                    ROW_NUMBER() OVER (
+                        ORDER BY 
+                            CASE 
+                                WHEN metadata->'http://ethz.ch/video/metadata'->>'order' IS NOT NULL 
+                                THEN (metadata->'http://ethz.ch/video/metadata'->>'order')::int
+                                ELSE 999999
+                            END,
+                            created
+                    ) as position
+                FROM all_events
+                WHERE series = (SELECT series FROM all_events WHERE id = $1)
+                    AND state = 'ready'
+            )
+            SELECT position FROM ordered_events WHERE id = $1
+        ";
+        
+        context.db
+            .query_opt(query, &[&event_id])
+            .await?
+            .map(|row| row.get::<_, i32>(0))
+            .pipe(Ok)
+    }
+
+    /// Get total count of videos in the same series
+    pub(crate) async fn get_series_video_count(
+        event_id: Key,
+        context: &Context,
+    ) -> ApiResult<Option<i32>> {
+        let query = "
+            SELECT COUNT(*)::int
+            FROM all_events
+            WHERE series = (SELECT series FROM all_events WHERE id = $1)
+                AND state = 'ready'
+        ";
+        
+        context.db
+            .query_opt(query, &[&event_id])
+            .await?
+            .map(|row| row.get::<_, i32>(0))
+            .pipe(Ok)
+    }
+}
+
+// ============================================
+// Cumulative Quiz Question Types
+// ============================================
+
+/// A quiz question with video context information
+#[derive(Debug, Clone, Serialize, Deserialize, GraphQLObject)]
+pub(crate) struct CumulativeQuizQuestion {
+    /// The question text
+    pub question: String,
+    
+    /// Type of question (multiple_choice or true_false)
+    #[serde(rename = "questionType")]
+    pub question_type: String,
+    
+    /// Available answer options (for multiple choice)
+    pub options: Option<Vec<String>>,
+    
+    /// The correct answer (as string representation)
+    #[serde(rename = "correctAnswer")]
+    #[serde(deserialize_with = "deserialize_correct_answer")]
+    pub correct_answer: String,
+    
+    /// Explanation of the answer
+    pub explanation: String,
+    
+    /// Difficulty level (easy, medium, hard)
+    pub difficulty: String,
+    
+    /// Context about which video this question comes from
+    #[serde(rename = "videoContext")]
+    pub video_context: VideoContext,
+}
+
+/// Information about which video a question comes from
+#[derive(Debug, Clone, Serialize, Deserialize, GraphQLObject)]
+pub(crate) struct VideoContext {
+    /// Event ID of the video this question is from
+    #[serde(rename = "eventId")]
+    pub event_id: String,
+    
+    /// Title of the video
+    #[serde(rename = "videoTitle")]
+    pub video_title: String,
+    
+    /// Position/number of this video in the series (1-based)
+    #[serde(rename = "videoNumber")]
+    pub video_number: i32,
+    
+    /// Timestamp in the video where this topic appears (in seconds)
+    pub timestamp: Option<i32>,
+}
+
+/// Summary information about a video included in a cumulative quiz
+#[derive(Debug, Clone, Serialize, Deserialize, GraphQLObject)]
+pub(crate) struct VideoInfo {
+    /// Event ID
+    #[serde(rename = "eventId")]
+    pub event_id: String,
+    
+    /// Video title
+    pub title: String,
+    
+    /// Position in series (1-based)
+    pub position: i32,
+    
+    /// Number of questions from this video
+    #[serde(rename = "questionCount")]
+    pub question_count: i32,
+}
 }
 

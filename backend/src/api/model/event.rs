@@ -17,7 +17,7 @@ use crate::{
         err::{self, ApiResult},
         model::{
             acl::{self, Acl},
-            ai::{AiSummary, AiQuiz},
+            ai::{AiSummary, AiQuiz, AiCumulativeQuiz},
             realm::Realm,
             series::Series,
             shared::{ToSqlColumn, SortDirection, SearchFilter, convert_acl_input}
@@ -434,6 +434,34 @@ impl AuthorizedEvent {
         context.db.query_mapped(&query, dbargs![&self.key], |row| {
             row.get::<_, String>(0)
         }).await.map_err(Into::into)
+
+    /// AI-generated cumulative quiz covering all videos up to this point in the series
+    async fn ai_cumulative_quiz(
+        &self,
+        context: &Context,
+        language: Option<String>,
+    ) -> ApiResult<Option<AiCumulativeQuiz>> {
+        AiCumulativeQuiz::load_for_event(
+            self.key, 
+            &language.unwrap_or_else(|| "en".to_string()), 
+            context
+        ).await
+    }
+
+    /// Whether this event can have a cumulative quiz (is part of a series with multiple videos)
+    async fn can_generate_cumulative_quiz(&self, context: &Context) -> ApiResult<bool> {
+        AiCumulativeQuiz::can_generate(self.key, context).await
+    }
+
+    /// Position of this video in its series (1-based), or None if not part of a series
+    async fn series_video_position(&self, context: &Context) -> ApiResult<Option<i32>> {
+        AiCumulativeQuiz::get_series_position(self.key, context).await
+    }
+
+    /// Total number of videos in the same series, or None if not part of a series
+    async fn series_video_count(&self, context: &Context) -> ApiResult<Option<i32>> {
+        AiCumulativeQuiz::get_series_video_count(self.key, context).await
+    }
     }
 
     /// Returns `true` if the realm has a video block with this video
