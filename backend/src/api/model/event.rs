@@ -442,11 +442,7 @@ impl AuthorizedEvent {
         context: &Context,
         language: Option<String>,
     ) -> ApiResult<Option<AiCumulativeQuiz>> {
-        AiCumulativeQuiz::load_for_event(
-            self.key, 
-            &language.unwrap_or_else(|| "en".to_string()), 
-            context
-        ).await
+        AiCumulativeQuiz::load_for_event(self.key, language, context).await
     }
 
     /// Whether this event can have a cumulative quiz (is part of a series with multiple videos)

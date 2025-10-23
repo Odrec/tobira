@@ -776,19 +776,42 @@ impl AiCumulativeQuiz {
 
 impl AiCumulativeQuiz {
     /// Load cumulative quiz for a specific event and language
+    /// If no language specified, uses the first available language from all AI content
     pub(crate) async fn load_for_event(
         event_id: Key,
-        language: &str,
+        language: Option<String>,
         context: &Context,
     ) -> ApiResult<Option<Self>> {
         let selection = Self::select();
+        
+        let lang = if let Some(lang) = language {
+            lang
+        } else {
+            // No language specified - get first available language across all AI content
+            let lang_query = "
+                select language from (
+                    select language from ai_summaries where event_id = $1
+                    union
+                    select language from ai_quizzes where event_id = $1
+                    union
+                    select language from ai_cumulative_quizzes where event_id = $1
+                ) as langs
+                order by language limit 1
+            ";
+            match context.db.query_opt(lang_query, &[&event_id]).await? {
+                Some(row) => row.get::<_, String>(0),
+                None => return Ok(None), // No AI content at all
+            }
+        };
+        
+        // Try to load cumulative quiz for the determined language
         let query = format!(
             "SELECT {selection} FROM ai_cumulative_quizzes \
              WHERE event_id = $1 AND language = $2"
         );
 
         context.db
-            .query_opt(&query, &[&event_id, &language])
+            .query_opt(&query, &[&event_id, &lang])
             .await?
             .map(|row| Self::from_row_start(&row))
             .pipe(Ok)
