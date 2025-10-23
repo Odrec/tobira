@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { useFragment, graphql } from "react-relay/hooks";
 import { useTranslation } from "react-i18next";
 import { Button } from "@opencast/appkit";
-import { LuCheck, LuX, LuVideo } from "react-icons/lu";
+import { LuCheck, LuX, LuVideo, LuExternalLink } from "react-icons/lu";
 
 import { AiCumulativeQuiz$key } from "./__generated__/AiCumulativeQuiz.graphql";
 import { COLORS } from "../color";
+import { secondsToTimeString, keyOfId } from "../util";
 
 const fragment = graphql`
   fragment AiCumulativeQuiz on AiCumulativeQuiz {
@@ -27,6 +28,7 @@ const fragment = graphql`
     }
     allSeriesVideos {
       eventId
+      databaseId
       title
       position
       questionCount
@@ -289,27 +291,57 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                     </Button>
                 </div>
 
-                {question.videoContext.timestamp != null && isCurrentVideo && onSeekToTimestamp && (
-                    <Button
-                        onClick={handleVideoNavigation}
-                        disabled={isNavigating}
-                        css={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            backgroundColor: jumpSuccess ? COLORS.happy1 : undefined,
-                            "&:hover:not([disabled])": {
+                {question.videoContext.timestamp != null && (
+                    isCurrentVideo && onSeekToTimestamp ? (
+                        <Button
+                            onClick={handleVideoNavigation}
+                            disabled={isNavigating}
+                            css={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
                                 backgroundColor: jumpSuccess ? COLORS.happy1 : undefined,
-                            },
-                        }}
-                    >
-                        {isNavigating
-                            ? t("video.ai-quiz.jumping", "Jumping...")
-                            : jumpSuccess
-                                ? t("video.ai-quiz.jumped", "✓ Jumped to video")
-                                : t("video.ai-quiz.jump-to-topic", "Jump to topic in video")
-                        }
-                    </Button>
+                                "&:hover:not([disabled])": {
+                                    backgroundColor: jumpSuccess ? COLORS.happy1 : undefined,
+                                },
+                            }}
+                        >
+                            {isNavigating
+                                ? t("video.ai-quiz.jumping", "Jumping...")
+                                : jumpSuccess
+                                    ? t("video.ai-quiz.jumped", "✓ Jumped to video")
+                                    : t("video.ai-quiz.jump-to-topic", "Jump to topic in video")
+                            }
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={() => {
+                                // Find the video in allSeriesVideos by matching databaseId
+                                const videoInfo = data.allSeriesVideos?.find(
+                                    v => v.databaseId === question.videoContext.eventId,
+                                );
+                                
+                                if (!videoInfo) {
+                                    return;
+                                }
+
+                                const key = keyOfId(videoInfo.eventId);
+                                const timestamp = secondsToTimeString(
+                                    question.videoContext.timestamp!,
+                                );
+                                const url = `/!v/${key}?t=${timestamp}`;
+                                window.open(url, "_blank");
+                            }}
+                            css={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.5rem",
+                            }}
+                        >
+                            <LuExternalLink size={16} />
+                            {t("video.ai-quiz.jump-to-topic", "Jump to topic in video")}
+                        </Button>
+                    )
                 )}
             </div>
 

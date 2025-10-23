@@ -684,7 +684,7 @@ impl AiCumulativeQuiz {
     fn included_videos(&self) -> Vec<VideoInfo> {
         // Extract video info from questions
         let questions = self.questions();
-        let mut video_map: std::collections::HashMap<String, (String, i32, usize)> = 
+        let mut video_map: std::collections::HashMap<String, (String, i32, usize)> =
             std::collections::HashMap::new();
 
         for question in questions {
@@ -695,8 +695,9 @@ impl AiCumulativeQuiz {
         }
 
         let mut videos: Vec<_> = video_map.into_iter()
-            .map(|(event_id, (title, position, count))| VideoInfo {
-                event_id,
+            .map(|(database_id, (title, position, count))| VideoInfo {
+                event_id: database_id.clone(), // This will be database ID for now
+                database_id,
                 title,
                 position,
                 question_count: count as i32,
@@ -709,11 +710,13 @@ impl AiCumulativeQuiz {
 
     /// All videos that should be included in this cumulative quiz
     async fn all_series_videos(&self, context: &Context) -> ApiResult<Vec<VideoInfo>> {
+        use crate::api::id::Id;
+        
         // Get exactly video_count videos from the series (ordered by position)
         let query = "
             WITH ordered_events AS (
                 SELECT
-                    e.id::text as event_id,
+                    e.id,
                     e.title,
                     ROW_NUMBER() OVER (
                         ORDER BY
@@ -727,13 +730,14 @@ impl AiCumulativeQuiz {
                 FROM all_events e
                 WHERE e.series = $1 AND e.state = 'ready'
             )
-            SELECT event_id, title, position
+            SELECT id, title, position
             FROM ordered_events
             WHERE position <= $2
             ORDER BY position
         ";
         
         // Get videos with questions to mark question counts
+        // The included_videos() returns database IDs as strings
         let videos_with_questions = self.included_videos();
         let question_counts: std::collections::HashMap<String, i32> = videos_with_questions
             .into_iter()
@@ -746,16 +750,23 @@ impl AiCumulativeQuiz {
             .await?;
         
         rows.try_for_each(|row| {
-            let event_id: String = row.get(0);
+            let id: Key = row.get(0);
             let title: String = row.get(1);
             let position: i32 = row.get(2);
+            
+            // Match against database ID (as string) to get question count
+            let database_id = (id.0 as i64).to_string();
             let question_count = question_counts
-                .get(&event_id)
+                .get(&database_id)
                 .copied()
                 .unwrap_or(0);
+            
+            // Convert Key to proper Tobira event ID for the frontend
+            let event_id = Id::event(id).to_string();
 
             result.push(VideoInfo {
                 event_id,
+                database_id,
                 title,
                 position,
                 question_count,
@@ -997,9 +1008,13 @@ pub(crate) struct VideoContext {
 /// Summary information about a video included in a cumulative quiz
 #[derive(Debug, Clone, Serialize, Deserialize, GraphQLObject)]
 pub(crate) struct VideoInfo {
-    /// Event ID
+    /// Event ID (Tobira format: evXXXXXXXXXXX)
     #[serde(rename = "eventId")]
     pub event_id: String,
+    
+    /// Database ID (for matching with questions)
+    #[serde(rename = "databaseId")]
+    pub database_id: String,
     
     /// Video title
     pub title: String,
