@@ -587,7 +587,6 @@ impl AiQuiz {
 /// Represents an AI-generated cumulative quiz covering multiple videos in a series
 #[derive(Debug)]
 pub(crate) struct AiCumulativeQuiz {
-    pub(crate) id: i64,
     pub(crate) event_id: Key,
     pub(crate) series_id: Key,
     pub(crate) language: String,
@@ -603,7 +602,6 @@ pub(crate) struct AiCumulativeQuiz {
     pub(crate) last_edited_by: Option<String>,
     pub(crate) flagged: bool,
     pub(crate) flag_count: i32,
-    pub(crate) included_event_ids: Vec<Key>,
     pub(crate) video_count: i32,
 }
 
@@ -611,7 +609,6 @@ impl_from_db!(
     AiCumulativeQuiz,
     select: {
         ai_cumulative_quizzes.{
-            id,
             event_id,
             series_id,
             language,
@@ -627,13 +624,11 @@ impl_from_db!(
             last_edited_by,
             flagged,
             flag_count,
-            included_event_ids,
             video_count,
         },
     },
     |row| {
         Self {
-            id: row.id(),
             event_id: row.event_id(),
             series_id: row.series_id(),
             language: row.language(),
@@ -649,7 +644,6 @@ impl_from_db!(
             last_edited_by: row.last_edited_by(),
             flagged: row.flagged(),
             flag_count: row.flag_count(),
-            included_event_ids: row.included_event_ids(),
             video_count: row.video_count(),
         }
     }
