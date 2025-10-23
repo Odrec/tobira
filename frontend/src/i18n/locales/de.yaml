@@ -198,6 +198,20 @@ video:
     next: Weiter
     explanation: 'Erklärung:'
     seek-to-topic: Zum Thema im Video springen
+    mode-selector:
+      title: Quiz-Modus
+      single: Nur dieses Video
+      single-description: '{{count}} Fragen aus der aktuellen Vorlesung'
+      cumulative: Kumulatives Quiz
+      cumulative-description: '{{videoCount}} Videos, ~{{questionCount}} Fragen'
+      cumulative-includes: 'Deckt alle Vorlesungen bis zu diesem Punkt ab'
+      load-quiz: Quiz laden
+      generating: Quiz wird generiert...
+    cumulative:
+      title: Kumulatives Serien-Quiz
+      from-video: 'Von: {{title}}'
+      video-number: 'Video {{number}}'
+      coverage: 'Abdeckung von {{count}} Videos in dieser Serie'
   ai-content:
     flag-button: Melden
     flag-tooltip: Problem mit diesem Inhalt melden

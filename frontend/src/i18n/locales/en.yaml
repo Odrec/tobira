@@ -196,6 +196,20 @@ video:
     next: Next
     explanation: 'Explanation:'
     seek-to-topic: Jump to topic in video
+    mode-selector:
+      title: Quiz Mode
+      single: This video only
+      single-description: '{{count}} questions from current lecture'
+      cumulative: Cumulative Quiz
+      cumulative-description: '{{videoCount}} videos, ~{{questionCount}} questions'
+      cumulative-includes: 'Covers all lectures up to this point'
+      load-quiz: Load Quiz
+      generating: Generating quiz...
+    cumulative:
+      title: Cumulative Series Quiz
+      from-video: 'From: {{title}}'
+      video-number: 'Video {{number}}'
+      coverage: 'Covering {{count}} videos in this series'
   ai-content:
     flag-button: Report
     flag-tooltip: Report an issue with this content
