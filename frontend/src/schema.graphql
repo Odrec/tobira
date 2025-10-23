@@ -1331,8 +1331,10 @@ type VideoContext {
 
 "Summary information about a video included in a cumulative quiz"
 type VideoInfo {
-  "Event ID"
+  "Event ID (Tobira format: evXXXXXXXXXXX)"
   eventId: String!
+  "Database ID (for matching with questions)"
+  databaseId: String!
   "Video title"
   title: String!
   "Position in series (1-based)"
