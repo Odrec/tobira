@@ -820,17 +820,17 @@ impl AiCumulativeQuiz {
         // Using the proven ordering logic from schema investigation
         let query = "
             WITH ordered_events AS (
-                SELECT 
+                SELECT
                     id,
                     ROW_NUMBER() OVER (
-                        ORDER BY 
-                            CASE 
-                                WHEN metadata->'http://ethz.ch/video/metadata'->>'order' IS NOT NULL 
+                        ORDER BY
+                            CASE
+                                WHEN metadata->'http://ethz.ch/video/metadata'->>'order' IS NOT NULL
                                 THEN (metadata->'http://ethz.ch/video/metadata'->>'order')::int
                                 ELSE 999999
                             END,
                             created
-                    ) as position
+                    )::int as position
                 FROM all_events
                 WHERE series = (SELECT series FROM all_events WHERE id = $1)
                     AND state = 'ready'
