@@ -355,6 +355,8 @@ type AiCumulativeQuiz {
   questions: [CumulativeQuizQuestion!]!
   "Information about videos included in this quiz"
   includedVideos: [VideoInfo!]!
+  "All videos that should be included in this cumulative quiz"
+  allSeriesVideos: [VideoInfo!]!
   "Number of videos included in this cumulative quiz"
   videoCount: Int!
   "OpenAI model used to generate this quiz"
