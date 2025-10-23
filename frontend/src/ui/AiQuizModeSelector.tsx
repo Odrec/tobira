@@ -12,6 +12,8 @@ const fragment = graphql`
   fragment AiQuizModeSelector on AuthorizedEvent
     @argumentDefinitions(language: { type: "String" }) {
     id
+    opencastId
+    databaseId
     aiQuiz(language: $language) {
       ...AiQuiz
       questions {
@@ -211,7 +213,7 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                         <AiCumulativeQuiz
                             fragmentRef={event.aiCumulativeQuiz}
                             onSeekToTimestamp={onSeekToTimestamp}
-                            currentEventId={event.id}
+                            currentEventId={event.databaseId}
                         />
                     ) : (
                         <div css={{

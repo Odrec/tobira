@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useFragment, graphql } from "react-relay/hooks";
 import { useTranslation } from "react-i18next";
 import { Button } from "@opencast/appkit";
-import { LuCheck, LuX, LuVideo, LuExternalLink } from "react-icons/lu";
+import { LuCheck, LuX, LuVideo } from "react-icons/lu";
 
 import { AiCumulativeQuiz$key } from "./__generated__/AiCumulativeQuiz.graphql";
 import { COLORS } from "../color";
@@ -62,6 +62,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
     const [score, setScore] = useState(0);
     const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
     const [isNavigating, setIsNavigating] = useState(false);
+    const [jumpSuccess, setJumpSuccess] = useState(false);
 
     if (!data || !data.questions || data.questions.length === 0) {
         return null;
@@ -114,8 +115,14 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
         // Only seek to timestamp if we're on the same video
         if (timestamp != null && onSeekToTimestamp) {
             setIsNavigating(true);
+            setJumpSuccess(false);
             try {
-                await onSeekToTimestamp(timestamp);
+                const success = await onSeekToTimestamp(timestamp);
+                setJumpSuccess(success);
+                // Clear success message after 2 seconds
+                if (success) {
+                    setTimeout(() => setJumpSuccess(false), 2000);
+                }
             } finally {
                 setIsNavigating(false);
             }
@@ -282,7 +289,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                     </Button>
                 </div>
 
-                {question.videoContext.timestamp != null && isCurrentVideo && (
+                {question.videoContext.timestamp != null && isCurrentVideo && onSeekToTimestamp && (
                     <Button
                         onClick={handleVideoNavigation}
                         disabled={isNavigating}
@@ -290,11 +297,17 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                             display: "flex",
                             alignItems: "center",
                             gap: "0.5rem",
+                            backgroundColor: jumpSuccess ? COLORS.happy1 : undefined,
+                            "&:hover:not([disabled])": {
+                                backgroundColor: jumpSuccess ? COLORS.happy1 : undefined,
+                            },
                         }}
                     >
                         {isNavigating
                             ? t("video.ai-quiz.jumping", "Jumping...")
-                            : t("video.ai-quiz.jump-to-topic", "Jump to topic in video")
+                            : jumpSuccess
+                                ? t("video.ai-quiz.jumped", "✓ Jumped to video")
+                                : t("video.ai-quiz.jump-to-topic", "Jump to topic in video")
                         }
                     </Button>
                 )}

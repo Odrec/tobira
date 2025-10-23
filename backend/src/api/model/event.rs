@@ -239,6 +239,12 @@ impl AuthorizedEvent {
     fn opencast_id(&self) -> &str {
         &self.opencast_id
     }
+    
+    /// Internal database key as a string (used for AI quiz video context matching)
+    fn database_id(&self) -> String {
+        (self.key.0 as i64).to_string()
+    }
+    
     fn is_live(&self) -> bool {
         self.is_live
     }

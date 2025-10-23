@@ -451,6 +451,8 @@ type ArrayMatch {
 type AuthorizedEvent implements Node {
   id: ID!
   opencastId: String!
+  "Internal database key as a string (used for AI quiz video context matching)"
+  databaseId: String!
   isLive: Boolean!
   title: String!
   description: String
