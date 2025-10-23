@@ -707,6 +707,66 @@ impl AiCumulativeQuiz {
         videos
     }
 
+    /// All videos that should be included in this cumulative quiz
+    async fn all_series_videos(&self, context: &Context) -> ApiResult<Vec<VideoInfo>> {
+        // Get exactly video_count videos from the series (ordered by position)
+        let query = "
+            WITH ordered_events AS (
+                SELECT
+                    e.id::text as event_id,
+                    e.title,
+                    ROW_NUMBER() OVER (
+                        ORDER BY
+                            CASE
+                                WHEN e.metadata->'http://ethz.ch/video/metadata'->>'order' IS NOT NULL
+                                THEN (e.metadata->'http://ethz.ch/video/metadata'->>'order')::int
+                                ELSE 999999
+                            END,
+                            e.created
+                    )::int as position
+                FROM all_events e
+                WHERE e.series = $1 AND e.state = 'ready'
+            )
+            SELECT event_id, title, position
+            FROM ordered_events
+            WHERE position <= $2
+            ORDER BY position
+        ";
+        
+        // Get videos with questions to mark question counts
+        let videos_with_questions = self.included_videos();
+        let question_counts: std::collections::HashMap<String, i32> = videos_with_questions
+            .into_iter()
+            .map(|v| (v.event_id, v.question_count))
+            .collect();
+
+        let mut result = Vec::new();
+        let rows = context.db
+            .query_raw(query, dbargs![&self.series_id, &self.video_count])
+            .await?;
+        
+        rows.try_for_each(|row| {
+            let event_id: String = row.get(0);
+            let title: String = row.get(1);
+            let position: i32 = row.get(2);
+            let question_count = question_counts
+                .get(&event_id)
+                .copied()
+                .unwrap_or(0);
+
+            result.push(VideoInfo {
+                event_id,
+                title,
+                position,
+                question_count,
+            });
+
+            std::future::ready(Ok(()))
+        }).await?;
+
+        Ok(result)
+    }
+
     /// Number of videos included in this cumulative quiz
     fn video_count(&self) -> i32 {
         self.video_count

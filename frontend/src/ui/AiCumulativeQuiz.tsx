@@ -25,7 +25,7 @@ const fragment = graphql`
         timestamp
       }
     }
-    includedVideos {
+    allSeriesVideos {
       eventId
       title
       position
@@ -221,7 +221,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                     </>
                 ) : (
                     <>
-                        {question.options?.map((option, idx) => (
+                        {question.options && question.options.map((option, idx) => (
                             <Button
                                 key={idx}
                                 onClick={() => handleAnswer(option)}
@@ -314,36 +314,116 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
             </div>
 
             {/* Included Videos Info */}
-            {data.includedVideos && data.includedVideos.length > 1 && (
-                <details css={{
-                    marginTop: "1.5rem",
-                    padding: "0.75rem",
-                    backgroundColor: COLORS.neutral05,
-                    borderRadius: 4,
-                    fontSize: "0.85rem",
-                }}>
-                    <summary css={{
-                        cursor: "pointer",
-                        fontWeight: 500,
-                        marginBottom: "0.5rem",
+            {data.allSeriesVideos && data.allSeriesVideos.length > 0 && (() => {
+                const allVideos = data.allSeriesVideos;
+                if (!allVideos) {
+                    return null;
+                }
+
+                const videosWithQuestions = allVideos
+                    .filter((v): v is typeof v => v.questionCount > 0);
+                const videosWithoutQuestions = allVideos
+                    .filter((v): v is typeof v => v.questionCount === 0);
+                const totalVideos = data.videoCount;
+
+                return (
+                    <div css={{
+                        marginTop: "1.5rem",
+                        padding: "0.75rem",
+                        backgroundColor: COLORS.neutral05,
+                        borderRadius: 4,
+                        fontSize: "0.85rem",
                     }}>
-                        {t("video.ai-quiz.covers-videos", "Covers {{count}} videos", {
-                            count: data.videoCount,
-                        })}
-                    </summary>
-                    <ul css={{
-                        marginTop: "0.5rem",
-                        paddingLeft: "1.5rem",
-                        marginBottom: 0,
-                    }}>
-                        {data.includedVideos.map(video => (
-                            <li key={video.eventId}>
-                                {video.title} ({video.questionCount} questions)
-                            </li>
-                        ))}
-                    </ul>
-                </details>
-            )}
+                        <div css={{ marginBottom: "0.5rem" }}>
+                            <strong>
+                                {videosWithQuestions.length === totalVideos
+                                    ? t(
+                                        "video.ai-quiz.covers-all-videos",
+                                        "Questions from all {{count}} videos in series",
+                                        { count: totalVideos },
+                                    )
+                                    : t(
+                                        "video.ai-quiz.covers-some-videos",
+                                        "Questions from {{actual}} of {{total}} videos in series",
+                                        { actual: videosWithQuestions.length, total: totalVideos },
+                                    )
+                                }
+                            </strong>
+                        </div>
+
+                        {/* Show which videos contributed questions */}
+                        {videosWithQuestions.length > 0 && (
+                            <div>
+                                <div css={{
+                                    fontSize: "0.9rem",
+                                    marginBottom: "0.25rem",
+                                }}>
+                                    {videosWithQuestions.length === 1
+                                        ? t("video.ai-quiz.video-included", "Video included:")
+                                        : t("video.ai-quiz.videos-included", "Videos included:")
+                                    }
+                                </div>
+                                <ul css={{
+                                    marginTop: 0,
+                                    paddingLeft: "1.5rem",
+                                    marginBottom: 0,
+                                }}>
+                                    {videosWithQuestions.map(video => (
+                                        <li key={video.eventId}>
+                                            {video.title} (
+                                            {t(
+                                                "video.ai-quiz.question-count",
+                                                "{{count}} questions",
+                                                { count: video.questionCount },
+                                            )}
+                                            )
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                
+                        {/* Show videos without questions if any */}
+                        {videosWithoutQuestions.length > 0 && (
+                            <details css={{ marginTop: "0.75rem" }}>
+                                <summary css={{
+                                    cursor: "pointer",
+                                    fontSize: "0.85rem",
+                                    color: COLORS.neutral40,
+                                    fontWeight: 500,
+                                }}>
+                                    {videosWithoutQuestions.length === 1
+                                        ? t(
+                                            "video.ai-quiz.video-without-questions",
+                                            "1 video without questions yet",
+                                        )
+                                        : t(
+                                            "video.ai-quiz.videos-without-questions",
+                                            "{{count}} videos without questions yet",
+                                            { count: videosWithoutQuestions.length },
+                                        )
+                                    }
+                                </summary>
+                                <ul css={{
+                                    marginTop: "0.25rem",
+                                    paddingLeft: "1.5rem",
+                                    marginBottom: 0,
+                                    fontSize: "0.85rem",
+                                }}>
+                                    {videosWithoutQuestions.map(video => (
+                                        <li
+                                            key={video.eventId}
+                                            css={{ color: COLORS.neutral40 }}
+                                        >
+                                            {video.title}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </details>
+                        )}
+                    </div>
+                );
+                })()}
 
             {/* Footer Info */}
             <div css={{
