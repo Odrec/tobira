@@ -40,17 +40,16 @@ type Props = {
 
 export const AiQuizModeSelector: React.FC<Props> = ({
     fragmentRef,
-    language,
-    onSeekToTimestamp
+    onSeekToTimestamp,
 }) => {
     const { t } = useTranslation();
     const event = useFragment(fragment, fragmentRef);
     const [quizMode, setQuizMode] = useState<QuizMode>("single");
     const [isExpanded, setIsExpanded] = useState(true);
 
-    const canUseCumulative = event.canGenerateCumulativeQuiz &&
-                             event.seriesVideoPosition &&
-                             event.seriesVideoPosition > 1;
+    const canUseCumulative = event.canGenerateCumulativeQuiz
+                             && event.seriesVideoPosition
+                             && event.seriesVideoPosition > 1;
 
     const singleQuestionCount = event.aiQuiz?.questions?.length || 0;
     const cumulativeQuestionCount = event.aiCumulativeQuiz?.questions?.length || 0;
@@ -140,7 +139,7 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                                 <div css={{ fontSize: "0.85rem", color: COLORS.neutral40 }}>
                                     {singleQuestionCount > 0
                                         ? t("video.ai-quiz.question-count", "{{count}} questions", {
-                                            count: singleQuestionCount
+                                            count: singleQuestionCount,
                                         })
                                         : t("video.ai-quiz.not-generated", "Not yet generated")
                                     }
@@ -178,13 +177,13 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                                     {t(
                                         "video.ai-quiz.cumulative-mode",
                                         "Cumulative - All {{count}} videos up to here",
-                                        { count: event.seriesVideoPosition }
+                                        { count: event.seriesVideoPosition },
                                     )}
                                 </div>
                                 <div css={{ fontSize: "0.85rem", color: COLORS.neutral40 }}>
                                     {cumulativeQuestionCount > 0
                                         ? t("video.ai-quiz.question-count", "{{count}} questions", {
-                                            count: cumulativeQuestionCount
+                                            count: cumulativeQuestionCount,
                                         })
                                         : t("video.ai-quiz.will-generate", "Will be generated on request")
                                     }
@@ -217,7 +216,7 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                                 <p>
                                     {t(
                                         "video.ai-quiz.not-available-single",
-                                        "Quiz not yet available for this video. Generate it using the AI service."
+                                        "Quiz not yet available for this video. Generate it using the AI service.",
                                     )}
                                 </p>
                             ) : (
@@ -225,7 +224,7 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                                     {t(
                                         "video.ai-quiz.not-available-cumulative",
                                         "Cumulative quiz not yet generated. This will include questions from all {{count}} videos in the series.",
-                                        { count: event.seriesVideoPosition }
+                                        { count: event.seriesVideoPosition },
                                     )}
                                 </p>
                             )}

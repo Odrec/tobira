@@ -6,7 +6,6 @@ import { LuCheck, LuX, LuVideo, LuExternalLink } from "react-icons/lu";
 
 import { AiCumulativeQuiz$key } from "./__generated__/AiCumulativeQuiz.graphql";
 import { COLORS } from "../color";
-import { FlagContentButton } from "./FlagContentButton";
 
 const fragment = graphql`
   fragment AiCumulativeQuiz on AiCumulativeQuiz {
@@ -53,7 +52,7 @@ type Props = {
 export const AiCumulativeQuiz: React.FC<Props> = ({
     fragmentRef,
     onSeekToTimestamp,
-    currentEventId
+    currentEventId,
 }) => {
     const { t } = useTranslation();
     const data = useFragment(fragment, fragmentRef);
@@ -145,7 +144,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                 <span>
                     {t("video.ai-quiz.from-video", "Video {{number}}: {{title}}", {
                         number: question.videoContext.videoNumber,
-                        title: question.videoContext.videoTitle
+                        title: question.videoContext.videoTitle,
                     })}
                 </span>
             </div>
@@ -164,7 +163,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                 <span>
                     {t("video.ai-quiz.question-number", "Question {{current}} of {{total}}", {
                         current: currentQuestion + 1,
-                        total: data.questions.length
+                        total: data.questions.length,
                     })}
                     {" · "}
                     <span css={{ textTransform: "capitalize" }}>{question.difficulty}</span>
@@ -305,7 +304,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                             <>
                                 <LuExternalLink size={14} />
                                 {t("video.ai-quiz.open-video", "Open: {{title}}", {
-                                    title: question.videoContext.videoTitle
+                                    title: question.videoContext.videoTitle,
                                 })}
                             </>
                         )}
@@ -328,7 +327,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                         marginBottom: "0.5rem",
                     }}>
                         {t("video.ai-quiz.covers-videos", "Covers {{count}} videos", {
-                            count: data.videoCount
+                            count: data.videoCount,
                         })}
                     </summary>
                     <ul css={{
@@ -336,7 +335,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                         paddingLeft: "1.5rem",
                         marginBottom: 0,
                     }}>
-                        {data.includedVideos.map((video: any) => (
+                        {data.includedVideos.map(video => (
                             <li key={video.eventId}>
                                 {video.title} ({video.questionCount} questions)
                             </li>
@@ -361,7 +360,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                     ⚠️ {t(
                         "video.ai-content.disclaimer",
                         "AI-generated content may contain errors or inaccuracies. "
-                        + "Always verify information from reliable sources."
+                        + "Always verify information from reliable sources.",
                     )}
                 </div>
             </div>
