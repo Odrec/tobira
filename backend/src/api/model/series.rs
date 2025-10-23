@@ -511,7 +511,7 @@ impl Series {
         let modified_events = added_events.chain(removed_events);
 
         // Load modified events to get their Opencast id and check input.
-        let changes = futures::stream::iter(modified_events)
+        let changes: Vec<(AuthorizedEvent, bool)> = futures::stream::iter(modified_events)
             .then(|(id, add)| async move {
                 let event = AuthorizedEvent::load_for_mutation(id, context).await
                     .map_err(|_| err::not_authorized!(

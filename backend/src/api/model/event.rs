@@ -1,4 +1,4 @@
-nuse chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc};
 use hyper::StatusCode;
 use postgres_types::ToSql;
 use juniper::{
@@ -434,6 +434,7 @@ impl AuthorizedEvent {
         context.db.query_mapped(&query, dbargs![&self.key], |row| {
             row.get::<_, String>(0)
         }).await.map_err(Into::into)
+    }
 
     /// AI-generated cumulative quiz covering all videos up to this point in the series
     async fn ai_cumulative_quiz(
@@ -461,7 +462,6 @@ impl AuthorizedEvent {
     /// Total number of videos in the same series, or None if not part of a series
     async fn series_video_count(&self, context: &Context) -> ApiResult<Option<i32>> {
         AiCumulativeQuiz::get_series_video_count(self.key, context).await
-    }
     }
 
     /// Returns `true` if the realm has a video block with this video

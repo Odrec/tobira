@@ -344,6 +344,43 @@ type AdminSyncInfo {
   externalApiVersion: String
 }
 
+type AiCumulativeQuiz {
+  "The event this cumulative quiz is accessed from"
+  eventId: ID!
+  "The series this cumulative quiz covers"
+  seriesId: ID!
+  "Language code of the quiz (e.g., 'en', 'de')"
+  language: String!
+  "The cumulative quiz questions with video context"
+  questions: [CumulativeQuizQuestion!]!
+  "Information about videos included in this quiz"
+  includedVideos: [VideoInfo!]!
+  "Number of videos included in this cumulative quiz"
+  videoCount: Int!
+  "OpenAI model used to generate this quiz"
+  model: String!
+  "Time taken to generate the quiz in milliseconds"
+  processingTimeMs: Int
+  "When this quiz was created"
+  createdAt: DateTime!
+  "When this quiz was last updated"
+  updatedAt: DateTime!
+  "Whether this quiz has been approved by an admin"
+  approved: Boolean!
+  "When this quiz was approved"
+  approvedAt: DateTime
+  "Username of the admin who approved this quiz"
+  approvedBy: String
+  "Whether this quiz has been manually edited by a human"
+  editedByHuman: Boolean!
+  "Username of the last person who edited this quiz"
+  lastEditedBy: String
+  "Whether this quiz has been flagged for review"
+  flagged: Boolean!
+  "Number of times this quiz has been flagged"
+  flagCount: Int!
+}
+
 type AiQuiz {
   "The event this quiz belongs to"
   eventId: ID!
@@ -446,6 +483,14 @@ type AuthorizedEvent implements Node {
   aiQuiz(language: String): AiQuiz
   "Available languages for AI-generated content (summaries and quizzes)"
   aiContentLanguages: [String!]!
+  "AI-generated cumulative quiz covering all videos up to this point in the series"
+  aiCumulativeQuiz(language: String): AiCumulativeQuiz
+  "Whether this event can have a cumulative quiz (is part of a series with multiple videos)"
+  canGenerateCumulativeQuiz: Boolean!
+  "Position of this video in its series (1-based), or None if not part of a series"
+  seriesVideoPosition: Int
+  "Total number of videos in the same series, or None if not part of a series"
+  seriesVideoCount: Int
   """
     Returns `true` if the realm has a video block with this video
     OR if the realm has a series or playlist block including this video.
@@ -481,6 +526,24 @@ type Caption {
 
 type CreateRealmLineageOutcome {
   numCreated: Int!
+}
+
+"A quiz question with video context information"
+type CumulativeQuizQuestion {
+  "The question text"
+  question: String!
+  "Type of question (multiple_choice or true_false)"
+  questionType: String!
+  "Available answer options (for multiple choice)"
+  options: [String!]
+  "The correct answer (as string representation)"
+  correctAnswer: String!
+  "Explanation of the answer"
+  explanation: String!
+  "Difficulty level (easy, medium, hard)"
+  difficulty: String!
+  "Context about which video this question comes from"
+  videoContext: VideoContext!
 }
 
 type EmptyQuery {
@@ -1248,6 +1311,30 @@ type VideoBlock implements Block {
   id: ID!
   index: Int!
   realm: Realm!
+}
+
+"Information about which video a question comes from"
+type VideoContext {
+  "Event ID of the video this question is from"
+  eventId: String!
+  "Title of the video"
+  videoTitle: String!
+  "Position/number of this video in the series (1-based)"
+  videoNumber: Int!
+  "Timestamp in the video where this topic appears (in seconds)"
+  timestamp: Int
+}
+
+"Summary information about a video included in a cumulative quiz"
+type VideoInfo {
+  "Event ID"
+  eventId: String!
+  "Video title"
+  title: String!
+  "Position in series (1-based)"
+  position: Int!
+  "Number of questions from this video"
+  questionCount: Int!
 }
 
 union Event = AuthorizedEvent | NotAllowed

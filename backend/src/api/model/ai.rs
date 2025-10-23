@@ -578,6 +578,7 @@ impl AiQuiz {
             .await?
             .ok_or_else(|| invalid_input!("AI quiz not found"))
     }
+}
 
 // ============================================
 // Cumulative Quiz
@@ -932,6 +933,5 @@ pub(crate) struct VideoInfo {
     /// Number of questions from this video
     #[serde(rename = "questionCount")]
     pub question_count: i32,
-}
 }
 

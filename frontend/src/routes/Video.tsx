@@ -33,7 +33,7 @@ import { isValidRealmPath } from "./Realm";
 import { Breadcrumbs } from "../ui/Breadcrumbs";
 import { PageTitle } from "../layout/header/ui";
 import { AiSummary } from "../ui/AiSummary";
-import { AiQuiz } from "../ui/AiQuiz";
+import { AiQuizModeSelector } from "../ui/AiQuizModeSelector";
 import {
     SyncedOpencastEntity,
     isSynced,
@@ -199,11 +199,12 @@ export const OpencastVideoRoute = makeRoute({
                 $listId: ID!,
                 $eventUser: String,
                 $eventPassword: String,
+                $captionLanguage: String,
             ) {
                 ... UserData
                 event: eventByOpencastId(id: $id) {
                     ... VideoPageEventData
-                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword)
+                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword, captionLanguage: $captionLanguage)
                     ... on AuthorizedEvent {
                         isReferencedByRealm(path: $realmPath)
                     }
@@ -217,12 +218,15 @@ export const OpencastVideoRoute = makeRoute({
         `;
 
         const creds = getCredentials("oc-event", id);
+        const urlParams = new URLSearchParams(window.location.search);
+        const explicitAiLang = urlParams.get("aiLang");
         const queryRef = loadQuery<VideoPageByOcIdInRealmQuery>(query, {
             id,
             realmPath,
             listId,
             eventUser: creds?.user,
             eventPassword: creds?.password,
+            captionLanguage: explicitAiLang,
         });
 
         return {
@@ -274,12 +278,13 @@ export const DirectVideoRoute = makeRoute({
                 $id: ID!,
                 $listId: ID!,
                 $eventUser: String,
-                $eventPassword: String
+                $eventPassword: String,
+                $captionLanguage: String
             ) {
                 ... UserData
                 event: eventById(id: $id) {
                     ... VideoPageEventData
-                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword)
+                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword, captionLanguage: $captionLanguage)
                 }
                 realm: rootRealm {
                     ... VideoPageRealmData
@@ -316,12 +321,13 @@ export const DirectOpencastVideoRoute = makeRoute({
                 $id: String!,
                 $listId: ID!,
                 $eventUser: String,
-                $eventPassword: String
+                $eventPassword: String,
+                $captionLanguage: String
             ) {
                 ... UserData
                 event: eventByOpencastId(id: $id) {
                     ... VideoPageEventData
-                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword)
+                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword, captionLanguage: $captionLanguage)
                 }
                 realm: rootRealm {
                     ... VideoPageRealmData
@@ -332,11 +338,13 @@ export const DirectOpencastVideoRoute = makeRoute({
         `;
         const id = decodeURIComponent(matches[1]);
         const creds = getCredentials("oc-event", id);
+        const explicitAiLang = url.searchParams.get("aiLang");
         const queryRef = loadQuery<VideoPageDirectOpencastLinkQuery>(query, {
             id,
             listId: makeListId(url.searchParams.get("list")),
             eventUser: creds?.user,
             eventPassword: creds?.password,
+            captionLanguage: explicitAiLang,
         });
 
         return matchedDirectRoute(query, queryRef);
@@ -491,6 +499,13 @@ const eventFragment = graphql`
             aiQuiz(language: $captionLanguage) {
                 ...AiQuiz
             }
+            aiCumulativeQuiz(language: $captionLanguage) {
+                ...AiCumulativeQuiz
+            }
+            canGenerateCumulativeQuiz
+            seriesVideoPosition
+            seriesVideoCount
+            ...AiQuizModeSelector @arguments(language: $captionLanguage)
         }
     }
 `;
@@ -1057,9 +1072,10 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
             <AiSummary fragmentRef={event.aiSummary} />
         )}
 
-        {event.aiQuiz && (
-            <AiQuiz
-                fragmentRef={event.aiQuiz}
+        {(event.aiQuiz || event.aiCumulativeQuiz) && (
+            <AiQuizModeSelector
+                fragmentRef={event}
+                language={selectedLanguage}
                 onSeekToTimestamp={async seconds => {
                     // Integration with video player to seek to timestamp
                     if (!paella.current?.player?.videoContainer || !paella.current?.loadPromise) {
@@ -1085,7 +1101,6 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                         await paella.current.player.videoContainer.setCurrentTime(seconds);
 
                         // Scroll the video player into view for user feedback
-
                         const playerElement = paella.current.player.containerElement as HTMLElement;
                         if (playerElement) {
                             playerElement.scrollIntoView({
