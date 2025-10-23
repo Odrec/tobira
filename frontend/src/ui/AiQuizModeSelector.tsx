@@ -225,14 +225,17 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                                 <p>
                                     {t(
                                         "video.ai-quiz.not-available-single",
-                                        "Quiz not yet available for this video. Generate it using the AI service.",
+                                        "Quiz not yet available for this video. "
+                                        + "Generate it using the AI service.",
                                     )}
                                 </p>
                             ) : (
                                 <p>
                                     {t(
                                         "video.ai-quiz.not-available-cumulative",
-                                        "Cumulative quiz not yet generated. This will include questions from all {{count}} videos in the series.",
+                                        "Cumulative quiz not yet generated. "
+                                        + "This will include questions from all {{count}} videos "
+                                        + "in the series.",
                                         { count: event.seriesVideoPosition },
                                     )}
                                 </p>
