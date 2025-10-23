@@ -49,7 +49,7 @@ export const AiQuizModeSelector: React.FC<Props> = ({
 
     const canUseCumulative = event.canGenerateCumulativeQuiz
                              && event.seriesVideoPosition
-                             && event.seriesVideoPosition > 1;
+                             && event.seriesVideoPosition >= 1;
 
     const singleQuestionCount = event.aiQuiz?.questions?.length || 0;
     const cumulativeQuestionCount = event.aiCumulativeQuiz?.questions?.length || 0;

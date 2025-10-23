@@ -109,22 +109,21 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
     };
 
     const handleVideoNavigation = async () => {
-        const { eventId, timestamp } = question.videoContext;
+        const { timestamp } = question.videoContext;
 
-        if (eventId === currentEventId && timestamp != null && onSeekToTimestamp) {
-            // Same video - seek to timestamp
+        // Only seek to timestamp if we're on the same video
+        if (timestamp != null && onSeekToTimestamp) {
             setIsNavigating(true);
             try {
                 await onSeekToTimestamp(timestamp);
             } finally {
                 setIsNavigating(false);
             }
-        } else {
-            // Different video - open in new tab
-            const url = `/v/${eventId}${timestamp ? `?t=${timestamp}` : ""}`;
-            window.open(url, "_blank");
         }
     };
+
+    // Check if this question is from the current video
+    const isCurrentVideo = question.videoContext.eventId === currentEventId;
 
     return (
         <div>
@@ -283,7 +282,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                     </Button>
                 </div>
 
-                {question.videoContext.timestamp != null && (
+                {question.videoContext.timestamp != null && isCurrentVideo && (
                     <Button
                         onClick={handleVideoNavigation}
                         disabled={isNavigating}
@@ -293,21 +292,10 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                             gap: "0.5rem",
                         }}
                     >
-                        {question.videoContext.eventId === currentEventId ? (
-                            <>
-                                {isNavigating
-                                    ? t("video.ai-quiz.jumping", "Jumping...")
-                                    : t("video.ai-quiz.jump-to-topic", "Jump to topic in video")
-                                }
-                            </>
-                        ) : (
-                            <>
-                                <LuExternalLink size={14} />
-                                {t("video.ai-quiz.open-video", "Open: {{title}}", {
-                                    title: question.videoContext.videoTitle,
-                                })}
-                            </>
-                        )}
+                        {isNavigating
+                            ? t("video.ai-quiz.jumping", "Jumping...")
+                            : t("video.ai-quiz.jump-to-topic", "Jump to topic in video")
+                        }
                     </Button>
                 )}
             </div>
