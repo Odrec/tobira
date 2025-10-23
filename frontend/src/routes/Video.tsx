@@ -204,7 +204,11 @@ export const OpencastVideoRoute = makeRoute({
                 ... UserData
                 event: eventByOpencastId(id: $id) {
                     ... VideoPageEventData
-                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword, captionLanguage: $captionLanguage)
+                        @arguments(
+                            eventUser: $eventUser,
+                            eventPassword: $eventPassword,
+                            captionLanguage: $captionLanguage
+                        )
                     ... on AuthorizedEvent {
                         isReferencedByRealm(path: $realmPath)
                     }
@@ -284,7 +288,11 @@ export const DirectVideoRoute = makeRoute({
                 ... UserData
                 event: eventById(id: $id) {
                     ... VideoPageEventData
-                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword, captionLanguage: $captionLanguage)
+                        @arguments(
+                            eventUser: $eventUser,
+                            eventPassword: $eventPassword,
+                            captionLanguage: $captionLanguage
+                        )
                 }
                 realm: rootRealm {
                     ... VideoPageRealmData
@@ -327,7 +335,11 @@ export const DirectOpencastVideoRoute = makeRoute({
                 ... UserData
                 event: eventByOpencastId(id: $id) {
                     ... VideoPageEventData
-                        @arguments(eventUser: $eventUser, eventPassword: $eventPassword, captionLanguage: $captionLanguage)
+                        @arguments(
+                            eventUser: $eventUser,
+                            eventPassword: $eventPassword,
+                            captionLanguage: $captionLanguage
+                        )
                 }
                 realm: rootRealm {
                     ... VideoPageRealmData

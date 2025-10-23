@@ -114,8 +114,11 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                             cursor: "pointer",
                             padding: "0.75rem",
                             borderRadius: 4,
-                            border: `2px solid ${quizMode === "single" ? COLORS.primary0 : COLORS.neutral25}`,
-                            backgroundColor: quizMode === "single" ? COLORS.primary1 : "transparent",
+                            border: `2px solid ${
+                                quizMode === "single" ? COLORS.primary0 : COLORS.neutral25
+                            }`,
+                            backgroundColor:
+                                quizMode === "single" ? COLORS.primary1 : "transparent",
                             transition: "all 0.2s",
                             "&:hover": {
                                 borderColor: COLORS.primary0,
@@ -154,8 +157,11 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                             cursor: "pointer",
                             padding: "0.75rem",
                             borderRadius: 4,
-                            border: `2px solid ${quizMode === "cumulative" ? COLORS.primary0 : COLORS.neutral25}`,
-                            backgroundColor: quizMode === "cumulative" ? COLORS.primary1 : "transparent",
+                            border: `2px solid ${
+                                quizMode === "cumulative" ? COLORS.primary0 : COLORS.neutral25
+                            }`,
+                            backgroundColor:
+                                quizMode === "cumulative" ? COLORS.primary1 : "transparent",
                             transition: "all 0.2s",
                             "&:hover": {
                                 borderColor: COLORS.primary0,
@@ -185,7 +191,10 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                                         ? t("video.ai-quiz.question-count", "{{count}} questions", {
                                             count: cumulativeQuestionCount,
                                         })
-                                        : t("video.ai-quiz.will-generate", "Will be generated on request")
+                                        : t(
+                                            "video.ai-quiz.will-generate",
+                                            "Will be generated on request",
+                                        )
                                     }
                                 </div>
                             </div>
