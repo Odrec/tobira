@@ -72,9 +72,21 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
 
     const question = data.questions[currentQuestion];
     const isAnswered = answeredQuestions.has(currentQuestion);
+    
+    // Normalize strings for comparison: trim whitespace and handle null/undefined
+    const normalizeAnswer = (answer: string | null | undefined): string => {
+        return (answer ?? "").trim();
+    };
+    
+    // Check if correctAnswer is a numeric index
+    const correctAnswerIndex = parseInt(question.correctAnswer);
+    const correctAnswerText = !isNaN(correctAnswerIndex) && question.options
+        ? question.options[correctAnswerIndex]
+        : question.correctAnswer;
+    
     const isCorrect = question.questionType === "true_false"
         ? selectedAnswer?.toLowerCase() === String(question.correctAnswer).toLowerCase()
-        : selectedAnswer === question.correctAnswer;
+        : normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswerText);
 
     const handleAnswer = (answer: string) => {
         if (isAnswered) {
@@ -84,9 +96,20 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
         setSelectedAnswer(answer);
         setShowExplanation(true);
 
+        // Normalize strings for comparison: trim whitespace and handle null/undefined
+        const normalizeAnswer = (ans: string | null | undefined): string => {
+            return (ans ?? "").trim();
+        };
+
+        // Check if correctAnswer is a numeric index
+        const correctAnswerIndex = parseInt(question.correctAnswer);
+        const correctAnswerText = !isNaN(correctAnswerIndex) && question.options
+            ? question.options[correctAnswerIndex]
+            : question.correctAnswer;
+
         const answerIsCorrect = question.questionType === "true_false"
             ? answer.toLowerCase() === String(question.correctAnswer).toLowerCase()
-            : answer === question.correctAnswer;
+            : normalizeAnswer(answer) === normalizeAnswer(correctAnswerText);
 
         if (answerIsCorrect) {
             setScore(score + 1);

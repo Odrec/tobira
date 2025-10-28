@@ -406,6 +406,7 @@ pub(crate) struct QuizQuestion {
     pub options: Option<Vec<String>>,
     
     /// The correct answer (as string representation)
+    #[serde(rename = "correct_answer")]
     #[serde(deserialize_with = "deserialize_correct_answer")]
     pub correct_answer: String,
     
