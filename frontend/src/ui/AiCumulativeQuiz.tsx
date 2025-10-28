@@ -320,7 +320,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                                 const videoInfo = data.allSeriesVideos?.find(
                                     v => v.databaseId === question.videoContext.eventId,
                                 );
-                                
+
                                 if (!videoInfo) {
                                     return;
                                 }
@@ -353,9 +353,9 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                 }
 
                 const videosWithQuestions = allVideos
-                    .filter((v): v is typeof v => v.questionCount > 0);
+                    .filter(v => v.questionCount > 0);
                 const videosWithoutQuestions = allVideos
-                    .filter((v): v is typeof v => v.questionCount === 0);
+                    .filter(v => v.questionCount === 0);
                 const totalVideos = data.videoCount;
 
                 return (
@@ -414,7 +414,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                                 </ul>
                             </div>
                         )}
-                
+
                         {/* Show videos without questions if any */}
                         {videosWithoutQuestions.length > 0 && (
                             <details css={{ marginTop: "0.75rem" }}>
@@ -455,7 +455,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
                         )}
                     </div>
                 );
-                })()}
+            })()}
 
             {/* Footer Info */}
             <div css={{
