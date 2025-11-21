@@ -1088,18 +1088,35 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
             <AiQuizModeSelector
                 fragmentRef={event}
                 language={selectedLanguage}
+                isVideoReady={() => {
+                    // Check if video player exists and has loaded content
+                    if (!paella.current?.player?.videoContainer) {
+                        return false;
+                    }
+                    try {
+                        // We can't use async here, so we return true if player exists
+                        // The actual duration check happens in onSeekToTimestamp
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                }}
                 onSeekToTimestamp={async seconds => {
                     // Integration with video player to seek to timestamp
                     if (!paella.current?.player?.videoContainer || !paella.current?.loadPromise) {
-                        // Video player not ready yet - update URL and start video
+                        // Video player not ready yet - update URL and scroll to video
                         const url = new URL(window.location.href);
                         url.searchParams.set("t", secondsToTimeString(seconds));
                         window.history.pushState({}, "", url);
                         
-                        // Scroll to video player
-                        const videoElements = document.querySelectorAll('[data-player-container]');
-                        if (videoElements.length > 0) {
-                            videoElements[0].scrollIntoView({
+                        // Scroll to video player - try multiple selectors
+                        const playerElement = paella.current?.player?.containerElement as HTMLElement
+                            || document.querySelector('.video-player')
+                            || document.querySelector('[data-player]')
+                            || document.getElementById('paella-container');
+                        
+                        if (playerElement) {
+                            playerElement.scrollIntoView({
                                 behavior: "smooth",
                                 block: "center",
                             });
@@ -1120,11 +1137,7 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                             url.searchParams.set("t", secondsToTimeString(seconds));
                             window.history.pushState({}, "", url);
                             
-                            // Start playing - video should jump to timestamp from URL
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                            await paella.current.player.videoContainer.play();
-                            
-                            // Scroll the video player into view
+                            // Scroll the video player into view first
                             const playerElement = paella.current.player.containerElement as HTMLElement;
                             if (playerElement) {
                                 playerElement.scrollIntoView({
@@ -1132,6 +1145,14 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                                     block: "center",
                                 });
                             }
+                            
+                            // Wait a moment for scroll, then start playing
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                            
+                            // Start playing - video should jump to timestamp from URL
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                            await paella.current.player.videoContainer.play();
+                            
                             return true;
                         }
 

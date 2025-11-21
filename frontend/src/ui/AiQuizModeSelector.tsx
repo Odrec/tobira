@@ -38,11 +38,13 @@ type Props = {
     fragmentRef: AiQuizModeSelector$key;
     language: string;
     onSeekToTimestamp?: (seconds: number) => Promise<boolean>;
+    isVideoReady?: () => boolean;
 };
 
 export const AiQuizModeSelector: React.FC<Props> = ({
     fragmentRef,
     onSeekToTimestamp,
+    isVideoReady,
 }) => {
     const { t } = useTranslation();
     const event = useFragment(fragment, fragmentRef);
@@ -59,7 +61,11 @@ export const AiQuizModeSelector: React.FC<Props> = ({
     // If can't use cumulative or no quiz data, just show regular quiz
     if (!canUseCumulative) {
         return event.aiQuiz ? (
-            <AiQuiz fragmentRef={event.aiQuiz} onSeekToTimestamp={onSeekToTimestamp} />
+            <AiQuiz
+                fragmentRef={event.aiQuiz}
+                onSeekToTimestamp={onSeekToTimestamp}
+                isVideoReady={isVideoReady}
+            />
         ) : null;
     }
 
@@ -208,6 +214,7 @@ export const AiQuizModeSelector: React.FC<Props> = ({
                         <AiQuiz
                             fragmentRef={event.aiQuiz}
                             onSeekToTimestamp={onSeekToTimestamp}
+                            isVideoReady={isVideoReady}
                         />
                     ) : quizMode === "cumulative" && event.aiCumulativeQuiz ? (
                         <AiCumulativeQuiz

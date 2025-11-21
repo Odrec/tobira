@@ -37,10 +37,10 @@ const fragment = graphql`
 type Props = {
     fragmentRef: AiQuiz$key;
     onSeekToTimestamp?: (seconds: number) => Promise<boolean>;
-    videoUrl?: string;
+    isVideoReady?: () => boolean;
 };
 
-export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp, videoUrl }) => {
+export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp, isVideoReady }) => {
     const { t } = useTranslation();
     const data = useFragment(fragment, fragmentRef);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -387,12 +387,18 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp, videoU
                                         backgroundColor: jumpSuccess ? COLORS.happy1 : undefined,
                                     },
                                 }}
+                                title={!isVideoReady?.()
+                                    ? t("video.ai-quiz.play-video-hint", "Click this, then play the video to jump to topic")
+                                    : undefined
+                                }
                             >
                                 {isJumping
                                     ? t("video.ai-quiz.jumping", "Jumping...")
                                     : jumpSuccess
                                         ? t("video.ai-quiz.jumped", "✓ Jumped to video")
-                                        : t("video.ai-quiz.seek-to-topic", "Jump to topic in video")
+                                        : !isVideoReady?.()
+                                            ? t("video.ai-quiz.play-to-jump", "Play video to jump to topic")
+                                            : t("video.ai-quiz.seek-to-topic", "Jump to topic in video")
                                 }
                             </Button>
                         )}
