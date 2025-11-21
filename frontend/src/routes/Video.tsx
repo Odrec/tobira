@@ -1091,13 +1091,51 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                 onSeekToTimestamp={async seconds => {
                     // Integration with video player to seek to timestamp
                     if (!paella.current?.player?.videoContainer || !paella.current?.loadPromise) {
-                        // Video player not ready yet
-                        return false;
+                        // Video player not ready yet - update URL and start video
+                        const url = new URL(window.location.href);
+                        url.searchParams.set("t", secondsToTimeString(seconds));
+                        window.history.pushState({}, "", url);
+                        
+                        // Scroll to video player
+                        const videoElements = document.querySelectorAll('[data-player-container]');
+                        if (videoElements.length > 0) {
+                            videoElements[0].scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                            });
+                        }
+                        return true;
                     }
                     try {
                         // Wait for player to be fully loaded
                         await paella.current.loadPromise;
 
+                        // Check if video is loaded by checking duration
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                        const duration = await paella.current.player.videoContainer.duration();
+                        
+                        if (!duration || duration === 0) {
+                            // Video not loaded yet - update URL parameter and start playing
+                            const url = new URL(window.location.href);
+                            url.searchParams.set("t", secondsToTimeString(seconds));
+                            window.history.pushState({}, "", url);
+                            
+                            // Start playing - video should jump to timestamp from URL
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                            await paella.current.player.videoContainer.play();
+                            
+                            // Scroll the video player into view
+                            const playerElement = paella.current.player.containerElement as HTMLElement;
+                            if (playerElement) {
+                                playerElement.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "center",
+                                });
+                            }
+                            return true;
+                        }
+
+                        // Video is loaded - use setCurrentTime directly
                         // Check if video is paused
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         const isPaused = await paella.current.player.videoContainer.paused();
@@ -1123,8 +1161,20 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
 
                         return true;
                     } catch {
-                        // Failed to seek to timestamp
-                        return false;
+                        // Failed to seek - try updating URL and starting video as fallback
+                        try {
+                            const url = new URL(window.location.href);
+                            url.searchParams.set("t", secondsToTimeString(seconds));
+                            window.history.pushState({}, "", url);
+                            
+                            if (paella.current?.player?.videoContainer) {
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+                                await paella.current.player.videoContainer.play();
+                            }
+                            return true;
+                        } catch {
+                            return false;
+                        }
                     }
                 }}
             />

@@ -7,6 +7,7 @@ import { LuCheck, LuX, LuCircle, LuPencil, LuChevronDown, LuChevronUp } from "re
 import { AiQuiz$key } from "./__generated__/AiQuiz.graphql";
 import { COLORS } from "../color";
 import { FlagContentButton } from "./FlagContentButton";
+import { secondsToTimeString } from "../util";
 
 const fragment = graphql`
   fragment AiQuiz on AiQuiz {
@@ -36,9 +37,10 @@ const fragment = graphql`
 type Props = {
     fragmentRef: AiQuiz$key;
     onSeekToTimestamp?: (seconds: number) => Promise<boolean>;
+    videoUrl?: string;
 };
 
-export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
+export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp, videoUrl }) => {
     const { t } = useTranslation();
     const data = useFragment(fragment, fragmentRef);
     const [isExpanded, setIsExpanded] = useState(true);
