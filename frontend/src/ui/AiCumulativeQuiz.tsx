@@ -72,18 +72,16 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
 
     const question = data.questions[currentQuestion];
     const isAnswered = answeredQuestions.has(currentQuestion);
-    
+
     // Normalize strings for comparison: trim whitespace and handle null/undefined
-    const normalizeAnswer = (answer: string | null | undefined): string => {
-        return (answer ?? "").trim();
-    };
-    
+    const normalizeAnswer = (answer: string | null | undefined): string => (answer ?? "").trim();
+
     // Check if correctAnswer is a numeric index
     const correctAnswerIndex = parseInt(question.correctAnswer);
     const correctAnswerText = !isNaN(correctAnswerIndex) && question.options
         ? question.options[correctAnswerIndex]
         : question.correctAnswer;
-    
+
     const isCorrect = question.questionType === "true_false"
         ? selectedAnswer?.toLowerCase() === String(question.correctAnswer).toLowerCase()
         : normalizeAnswer(selectedAnswer) === normalizeAnswer(correctAnswerText);
@@ -97,9 +95,7 @@ export const AiCumulativeQuiz: React.FC<Props> = ({
         setShowExplanation(true);
 
         // Normalize strings for comparison: trim whitespace and handle null/undefined
-        const normalizeAnswer = (ans: string | null | undefined): string => {
-            return (ans ?? "").trim();
-        };
+        const normalizeAnswer = (ans: string | null | undefined): string => (ans ?? "").trim();
 
         // Check if correctAnswer is a numeric index
         const correctAnswerIndex = parseInt(question.correctAnswer);

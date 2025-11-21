@@ -58,9 +58,7 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
     const isAnswered = answeredQuestions.has(currentQuestion);
 
     // Normalize strings for comparison
-    const normalizeAnswer = (answer: string | null | undefined): string => {
-        return (answer ?? "").trim();
-    };
+    const normalizeAnswer = (answer: string | null | undefined): string => (answer ?? "").trim();
 
     // Check if correctAnswer is a numeric index
     const correctAnswerIndex = parseInt(question.correctAnswer);
@@ -83,9 +81,7 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp }) => {
         setShowExplanation(true);
 
         // Normalize strings for comparison
-        const normalizeAnswer = (ans: string | null | undefined): string => {
-            return (ans ?? "").trim();
-        };
+        const normalizeAnswer = (ans: string | null | undefined): string => (ans ?? "").trim();
 
         // Check if correctAnswer is a numeric index
         const correctAnswerIndex = parseInt(question.correctAnswer);
