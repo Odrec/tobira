@@ -1108,13 +1108,14 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                         const url = new URL(window.location.href);
                         url.searchParams.set("t", secondsToTimeString(seconds));
                         window.history.pushState({}, "", url);
-                        
+
                         // Scroll to video player - try multiple selectors
-                        const playerElement = paella.current?.player?.containerElement as HTMLElement
-                            || document.querySelector('.video-player')
-                            || document.querySelector('[data-player]')
-                            || document.getElementById('paella-container');
-                        
+                        const playerElement
+                            = paella.current?.player?.containerElement as HTMLElement
+                            || document.querySelector(".video-player")
+                            || document.querySelector("[data-player]")
+                            || document.getElementById("paella-container");
+
                         if (playerElement) {
                             playerElement.scrollIntoView({
                                 behavior: "smooth",
@@ -1130,29 +1131,30 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                         // Check if video is loaded by checking duration
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                         const duration = await paella.current.player.videoContainer.duration();
-                        
+
                         if (!duration || duration === 0) {
                             // Video not loaded yet - update URL parameter and start playing
                             const url = new URL(window.location.href);
                             url.searchParams.set("t", secondsToTimeString(seconds));
                             window.history.pushState({}, "", url);
-                            
+
                             // Scroll the video player into view first
-                            const playerElement = paella.current.player.containerElement as HTMLElement;
+                            const playerElement
+                                = paella.current.player.containerElement as HTMLElement;
                             if (playerElement) {
                                 playerElement.scrollIntoView({
                                     behavior: "smooth",
                                     block: "center",
                                 });
                             }
-                            
+
                             // Wait a moment for scroll, then start playing
                             await new Promise(resolve => setTimeout(resolve, 300));
-                            
+
                             // Start playing - video should jump to timestamp from URL
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                             await paella.current.player.videoContainer.play();
-                            
+
                             return true;
                         }
 
@@ -1187,7 +1189,7 @@ const AiContentSection: React.FC<AiContentSectionProps> = ({ event, paella }) =>
                             const url = new URL(window.location.href);
                             url.searchParams.set("t", secondsToTimeString(seconds));
                             window.history.pushState({}, "", url);
-                            
+
                             if (paella.current?.player?.videoContainer) {
                                 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                                 await paella.current.player.videoContainer.play();

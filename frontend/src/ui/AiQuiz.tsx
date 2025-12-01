@@ -7,7 +7,6 @@ import { LuCheck, LuX, LuCircle, LuPencil, LuChevronDown, LuChevronUp } from "re
 import { AiQuiz$key } from "./__generated__/AiQuiz.graphql";
 import { COLORS } from "../color";
 import { FlagContentButton } from "./FlagContentButton";
-import { secondsToTimeString } from "../util";
 
 const fragment = graphql`
   fragment AiQuiz on AiQuiz {
@@ -388,7 +387,10 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp, isVide
                                     },
                                 }}
                                 title={!isVideoReady?.()
-                                    ? t("video.ai-quiz.play-video-hint", "Click this, then play the video to jump to topic")
+                                    ? t(
+                                        "video.ai-quiz.play-video-hint",
+                                        "Click this, then play the video to jump to topic",
+                                    )
                                     : undefined
                                 }
                             >
@@ -397,8 +399,14 @@ export const AiQuiz: React.FC<Props> = ({ fragmentRef, onSeekToTimestamp, isVide
                                     : jumpSuccess
                                         ? t("video.ai-quiz.jumped", "✓ Jumped to video")
                                         : !isVideoReady?.()
-                                            ? t("video.ai-quiz.play-to-jump", "Play video to jump to topic")
-                                            : t("video.ai-quiz.seek-to-topic", "Jump to topic in video")
+                                            ? t(
+                                                "video.ai-quiz.play-to-jump",
+                                                "Play video to jump to topic",
+                                            )
+                                            : t(
+                                                "video.ai-quiz.seek-to-topic",
+                                                "Jump to topic in video",
+                                            )
                                 }
                             </Button>
                         )}
