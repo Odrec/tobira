@@ -1,2 +1,5 @@
 /deploy
 /util/.db-dumps-cache
+
+# AI development documentation (internal)
+/docs/_ai-dev-docs
